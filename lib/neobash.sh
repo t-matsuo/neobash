@@ -77,7 +77,8 @@ __nb::init__() {
          echo "to use netobash, bash version 5 or higher is required"
          exit 1
     fi
-    NB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+    NB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)"
+
     # Loaded Libraries
     NB_LIBS=("neobash.sh")
     # import core libraries
