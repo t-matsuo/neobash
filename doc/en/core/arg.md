@@ -31,18 +31,19 @@ This command takes the following options.
   * ex: ``-p``, ``--port``, ``-h``, ``--host`` etc.
 * -t: type (optional)
   * type can be one of: ``string``, ``int``, ``bool``
-  * default is ``string``
+  * default : ``string``
 * -r: required (optional)
   * If true, an error will be occured if this option is not specified in the arguments.
 * -h: help (optional)
   * This option's help message.
   * You can show usage with the ``arg::usage``` command.
-  * default is ``no help message for this option``
+  * default : ``no help message for this option``
 * -s: store (optional)
   * In the case of "none," the argument must be given a value.
   * In the case of "true" or "false," the argument does not take a value.
   * Setting it to true means that the value will be true if the option is specified, and false means the opposite.If you specify true or false, you must set the type to bool.
-* arg7: default value (optional)
+  * default : "none"
+* -d: default value (optional)
   * If the option is not specified, this value will be used as default.
   * If -r value is false and no default value is set, an empty string will be automatically assigned for type string, 0 for type int, and false for type bool.
 
@@ -52,7 +53,7 @@ You can define an option alias in the following way.
 args::add_alias -l "label" -a "alias"
 ```
 
-For example, you can define an alias for the option ``-p`` as ``-port``.
+For example, you can define an alias for the option ``-p`` as ``--port``.
 
 (ex)
 ```bash
