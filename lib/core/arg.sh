@@ -357,9 +357,9 @@ core::arg::parse() {
         if [[ ${CORE_ARG_REQUIRED["$label"]} == "false" && -z ${CORE_ARG_VALUE["$label"]:-} ]]; then
             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
             case ${CORE_ARG_TYPE["$label"]} in
-                string) [[ -z ${CORE_ARG_DEFAULT["$label"]:-} ]] && CORE_ARG_VALUE["$label"]="";;
-                int)    [[ -z ${CORE_ARG_DEFAULT["$label"]:-} ]] && CORE_ARG_VALUE["$label"]="0";;
-                bool)   [[ -z ${CORE_ARG_DEFAULT["$label"]:-} ]] && CORE_ARG_VALUE["$label"]="false";;
+                string) [[ ! -v ${CORE_ARG_DEFAULT["$label"]} ]] && CORE_ARG_VALUE["$label"]="";;
+                int)    [[ ! -v ${CORE_ARG_DEFAULT["$label"]} ]] && CORE_ARG_VALUE["$label"]="0";;
+                bool)   [[ ! -v ${CORE_ARG_DEFAULT["$label"]} ]] && CORE_ARG_VALUE["$label"]="false";;
                 *) core::log::error_exit "invalid type: ${CORE_ARG_TYPE[$label]}";;
             esac
         fi
