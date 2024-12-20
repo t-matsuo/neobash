@@ -15,7 +15,7 @@ arg::init_global
 一方、bash関数の引数をパースしたい場合は、以下のコマンドで初期化してください。
 
 ```bash
-args::init_local
+arg::init_local
 ```
 
 ### オプションの定義方法
@@ -51,18 +51,18 @@ args::init_local
 以下のように、オプションのエイリアスを定義できます。
 
 ```bash
-args::add_alias -l "label" -a "alias"
+arg::add_alias -l "label" -a "alias"
 ```
 
 例えば、以下のように``-p``オプションのエイリアスとして``--port``オプションを定義できます。
 
 (例)
 ```bash
-args::add_option -l "ARG_PORT" -o "-p" -t "int"
-args::add_option_alias -l "ARG_PORT" -a "--port"
+arg::add_option -l "ARG_PORT" -o "-p" -t "int"
+arg::add_option_alias -l "ARG_PORT" -a "--port"
 ```
 
-``args::get_all_option`` コマンドで定義されている全てのオプションをcsvフォーマットで表示できます。
+``arg::get_all_option`` コマンドで定義されている全てのオプションをcsvフォーマットで表示できます。
 
 (例)
 ```
@@ -71,7 +71,7 @@ ARG_PORT,-p,--port,int,true,"no help message for this option",none,""
 ARG_HOST,-n,--name,string,true,"hostname",none,""
 ```
 
-``args::get_all_value`` コマンドは、引数パース後に実行すると全てのラベルと値を表示します。
+``arg::get_all_value`` コマンドは、引数パース後に実行すると全てのラベルと値を表示します。
 
 (例)
 ```
@@ -84,7 +84,7 @@ ARG_HOST=localhost
 オプションを定義した後、以下のコマンドでパースできます。
 
 ```
-args::parse "$@"
+arg::parse "$@"
 ```
 
 ### 値の取得
@@ -92,7 +92,7 @@ args::parse "$@"
 以下のコマンドでパースした値を取得できます。
 
 ```
-args::get -l "label"
+arg::get -l "label"
 ```
 
 ### 値の更新
@@ -100,7 +100,7 @@ args::get -l "label"
 以下のコマンドでパースした値を更新できます。
 
 ```
-args::set_value -l "label" -v "new value"
+arg::set_value -l "label" -v "new value"
 ```
 
 ### 値の削除
@@ -108,7 +108,7 @@ args::set_value -l "label" -v "new value"
 以下のコマンドでパースした値を削除できます。
 
 ```
-args::del_value -l "label"
+arg::del_value -l "label"
 ```
 
 値削除後、stringタイプには空文字が、intタイプには0が、boolタイプにはfalseが自動的に割り当てられます。ラベル自体は削除されません。
@@ -125,7 +125,7 @@ args::del_value -l "label"
 
 ### 予約済みオプション
 
--h, --help, -v, --version オプションは予約されています. 引数として、-h または --help が渡されると、自動でshow_help()関数が実行されプログラムは終了します。同様に-v または --version が渡されると、 show_version()関数が実行されプログラムは終了します. そのため、これらの関数はargs::parseを呼び出す前に定義してあげると便利です。
+-h, --help, -v, --version オプションは予約されています. 引数として、-h または --help が渡されると、自動でshow_help()関数が実行されプログラムは終了します。同様に-v または --version が渡されると、 show_version()関数が実行されプログラムは終了します. そのため、これらの関数はarg::parseを呼び出す前に定義してあげると便利です。
 
 ### バリデーション
 
