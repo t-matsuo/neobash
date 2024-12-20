@@ -73,8 +73,8 @@ nb::command_check() {
 }
 
 __nb::init__() {
-    if [[ ${BASH_VERSINFO[0]} -lt 5 ]]; then
-         echo "to use netobash, bash version 5 or higher is required"
+    if [[ ${BASH_VERSINFO[0]} -lt 4 ]]; then
+         echo "to use netobash, bash version 4 or higher is required"
          exit 1
     fi
     NB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)"
