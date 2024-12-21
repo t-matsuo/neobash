@@ -67,7 +67,7 @@ nb::command_check() {
     local cmd
     [[ -z "${1:-}" ]] && core::log::error_exit "cmmand name is empty"
     for cmd in $1; do
-        type "$cmd" 2>/dev/null || core::log::error_exit "command '$cmd' not found"
+        type "$cmd" >/dev/null 2>/dev/null || core::log::error_exit "command '$cmd' not found"
     done
     return 0
 }
