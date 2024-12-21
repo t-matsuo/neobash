@@ -14,28 +14,59 @@
 
 # for importing library
 nb::import() {
-    local i
+    local file
     local libname
+    local path
+    local import_ok=false
 
     [[ -z "${1:-}" ]] && core::log::error_exit "library name is empty"
     [[ "${1:-}" =~ " " ]] && core::log::error_exit "library name '$1' contains spaces"
-    for i in ${NB_DIR}/$1 ; do
-        libname="${i##"${NB_DIR}"/}"
-        [[ -f "$i" ]] || core::log::crit "library '$libname' not found"
-        if nb::has_lib "$libname"; then
-            core::log::debug "library '$libname' already impported" "true"
-            continue
-        fi
-        # cannot use core::log::debug when loading lib/core/log.sh, so skip importing message
-        [[ "$i" == "${NB_DIR}/core/log.sh" ]] || core::log::debug "importing library $libname"
+    for path in ${NB_LIB_PATH[@]}; do
+        for file in ${path}/$1 ; do
+            [[ "$file" == "${NB_DIR}/core/log.sh" ]] || core::log::debug "searching library '$1' in $path"
+            libname="${file##"${path}"/}"
+            if [[ ! -f "$file" ]]; then
+                core::log::debug "library '$libname' not found in $path"
+                continue
+            fi
+            if nb::has_lib "$libname"; then
+                core::log::debug "library '$libname' already impported" "true"
+                import_ok=true
+                continue
+            fi
+            # cannot use core::log::debug when loading lib/core/log.sh, so skip importing message
+            if [[ "$file" == "${NB_DIR}/core/log.sh" ]]; then
+                [[ "${LOG_DEBUG:-}" == "true" ]] && printf "%(%F-%T%z)T " && echo "DEBUG importing library $file" >&2
+            else
+                core::log::debug "importing library $libname in $path"
+            fi
 
-        if source "$i" "$@"; then
-            #NB_LIBS+=("${i##${NB_DIR}/}")
-            NB_LIBS+=("$libname")
-        else
-            core::log::error_exit "importing library $i failed"
-        fi
+            if source "$file" "$@"; then
+                #NB_LIBS+=("${i##${NB_DIR}/}")
+                NB_LIBS+=("$libname")
+                import_ok=true
+            else
+                core::log::error_exit "importing library $file failed"
+            fi
+        done
+        [[ "$import_ok" == "true" ]] && break
     done
+
+    if [[ "$import_ok" == "false" ]]; then
+        core::log::error_exit "importing library '$1' failed"
+    fi
+}
+
+# add library path to import
+nb::add_lib_path() {
+    [[ -z "${1:-}" ]] && core::log::crit "library path is empty"
+    [[ ! -d "$1" ]] && core::log::crit "library path '$1' not found"
+    NB_LIB_PATH=("$1" "${NB_LIB_PATH[@]}")
+}
+
+# get library path
+nb::get_lib_path() {
+    echo "${NB_LIB_PATH[@]}"
 }
 
 # list loaded libraries
@@ -125,6 +156,8 @@ __nb::init__() {
          exit 1
     fi
     NB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)"
+    # add library path
+    NB_LIB_PATH+=("$NB_DIR")
 
     # Loaded Libraries
     NB_LIBS=("neobash.sh")
