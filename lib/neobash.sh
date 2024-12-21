@@ -72,11 +72,19 @@ nb::command_check() {
     return 0
 }
 
+# check bash version
+__nb::check_bash_version__() {
+    [[ ${BASH_VERSINFO[0]} -lt 4 ]] && return 1
+    [[ ${BASH_VERSINFO[0]} -eq 4 ]] && [[ ${BASH_VERSINFO[1]} -lt 2 ]] && return 1
+    return 0
+}
+
 __nb::init__() {
-    if [[ ${BASH_VERSINFO[0]} -lt 4 ]]; then
-         echo "to use netobash, bash version 4 or higher is required"
+    if ! __nb::check_bash_version__; then
+         echo "ERROR netobash requires bash version 4.2 or higher"
          exit 1
     fi
+
     NB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)"
 
     # Loaded Libraries
