@@ -72,19 +72,58 @@ nb::command_check() {
     return 0
 }
 
-# check bash version
-__nb::check_bash_version__() {
-    [[ ${BASH_VERSINFO[0]} -lt 4 ]] && return 1
-    [[ ${BASH_VERSINFO[0]} -eq 4 ]] && [[ ${BASH_VERSINFO[1]} -lt 2 ]] && return 1
+# check bash minimum version
+# arg1: minimum version
+nb::check_bash_min_version() {
+    local version=$1
+    local major
+    local minor
+    local patch
+
+    if [[ ${version} =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        major=${BASH_REMATCH[1]}
+        minor=${BASH_REMATCH[2]}
+        patch=${BASH_REMATCH[3]}
+    else
+        echo "ERROR invalid bash version format ${BASH_SOURCE[0]}:${BASH_LINENO[0]}"
+        exit 1
+    fi
+    [[ ${BASH_VERSINFO[0]} -lt $major ]] && return 1
+    [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -lt $minor ]] && return 1
+    [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -eq $minor ]] \
+        && [[ ${BASH_VERSINFO[2]} -lt $patch ]] && return 1
+    return 0
+}
+
+# check bash maximum version
+# arg1: maximum version
+nb::check_bash_max_version() {
+    local version=$1
+    local major
+    local minor
+    local patch
+
+    if [[ ${version} =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        major=${BASH_REMATCH[1]}
+        minor=${BASH_REMATCH[2]}
+        patch=${BASH_REMATCH[3]}
+    else
+        echo "ERROR invalid bash version format ${BASH_SOURCE[0]}:${BASH_LINENO[0]}"
+        exit 1
+    fi
+    [[ ${BASH_VERSINFO[0]} -gt $major ]] && return 1
+    [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -gt $minor ]] && return 1
+    [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -eq $minor ]] \
+        && [[ ${BASH_VERSINFO[2]} -gt $patch ]] && return 1
     return 0
 }
 
 __nb::init__() {
-    if ! __nb::check_bash_version__; then
-         echo "ERROR netobash requires bash version 4.2 or higher"
+    local required_bash_verion="4.2.0"
+    if ! nb::check_bash_min_version $required_bash_verion; then
+         echo "ERROR netobash requires bash version $required_bash_verion or higher"
          exit 1
     fi
-
     NB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)"
 
     # Loaded Libraries
