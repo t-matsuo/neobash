@@ -116,9 +116,9 @@ nb::check_bash_min_version() {
         minor=${BASH_REMATCH[2]}
         patch=${BASH_REMATCH[3]}
     else
-        echo "ERROR invalid bash version format ${BASH_SOURCE[0]}:${BASH_LINENO[0]}"
-        exit 1
+        core::log::error_exit "ERROR invalid bash version format ${BASH_SOURCE[0]}:${BASH_LINENO[0]}"
     fi
+    core::log::debug "checking bash minimum version ( $major.$minor.$patch <= ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}.${BASH_VERSINFO[2]} )"
     [[ ${BASH_VERSINFO[0]} -lt $major ]] && return 1
     [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -lt $minor ]] && return 1
     [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -eq $minor ]] \
@@ -139,9 +139,10 @@ nb::check_bash_max_version() {
         minor=${BASH_REMATCH[2]}
         patch=${BASH_REMATCH[3]}
     else
-        echo "ERROR invalid bash version format ${BASH_SOURCE[0]}:${BASH_LINENO[0]}"
+        core::log::error_exit "ERROR invalid bash version format ${BASH_SOURCE[0]}:${BASH_LINENO[0]}"
         exit 1
     fi
+    core::log::debug "checking bash maximum version ( $major.$minor.$patch >= ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}.${BASH_VERSINFO[2]} )"
     [[ ${BASH_VERSINFO[0]} -gt $major ]] && return 1
     [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -gt $minor ]] && return 1
     [[ ${BASH_VERSINFO[0]} -eq $major ]] && [[ ${BASH_VERSINFO[1]} -eq $minor ]] \
@@ -151,10 +152,6 @@ nb::check_bash_max_version() {
 
 __nb::init__() {
     local required_bash_verion="4.2.0"
-    if ! nb::check_bash_min_version $required_bash_verion; then
-         echo "ERROR netobash requires bash version $required_bash_verion or higher"
-         exit 1
-    fi
     NB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)"
     # add library path
     NB_LIB_PATH+=("$NB_DIR")
@@ -165,6 +162,11 @@ __nb::init__() {
     nb::import 'core/log.sh'
     core::log::debug "library path: $NB_DIR"
     nb::import 'core/*'
+
+    if ! nb::check_bash_min_version $required_bash_verion; then
+         echo "ERROR netobash requires bash version $required_bash_verion or higher"
+         exit 1
+    fi
 }
 
 #### Initiazling ####
