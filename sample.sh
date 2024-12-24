@@ -44,6 +44,10 @@ myfunc() {
     log::info "get -a value: $( arg::get_value -l "ARG_A" )"
     log::info "args all values:\n$( core::arg::get_all_value )"
 
+    log::info "------ show usage -----"
+    core::arg::show_usage "help: "
+    log::info "-----------------------"
+
     # check SIGINT (Ctrl-C occurs SIGERR)
     # sleep 2
 

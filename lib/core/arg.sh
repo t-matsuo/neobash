@@ -504,10 +504,12 @@ core::arg::get_all_option() {
 
 # show usage for help message
 core::arg::show_usage() {
-    local PREFIX=$1
+    local PREFIX=""
     local label
     local required
     local value
+
+    [[ -v 1 ]] && PREFIX="$1"
 
     for label in $CORE_ARG_LABEL; do
         value=""
