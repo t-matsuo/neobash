@@ -36,6 +36,8 @@ myfunc() {
     log::info "Options:\n$( arg::get_all_option )"
 
     log::info "get -a value: $( arg::get_value -l "ARG_A" )"
+    log::info "ARGS[ARG_A]:  ${ARGS[ARG_A]}"
+
     arg::set_value -l "ARG_A" -v "new valueA"
     log::info "get -a value: $( arg::get_value -l "ARG_A" )"
     arg::del_value -l "ARG_A"

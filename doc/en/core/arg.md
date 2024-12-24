@@ -94,6 +94,12 @@ You can extract a value using the following command.
 args::get -l "label"
 ```
 
+Or use ARGS array.
+
+```
+ARGS["label"]
+```
+
 ### Update a value
 
 You can update a value using the following command.

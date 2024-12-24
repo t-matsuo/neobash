@@ -27,6 +27,7 @@ alias core::arg::init_global='
     declare -A CORE_ARG_STORE
     declare -A CORE_ARG_VALUE
     declare -a ARG_OTHERS
+    declare -n ARGS=CORE_ARG_VALUE
 '
 
 alias core::arg::init_local='
@@ -41,6 +42,7 @@ alias core::arg::init_local='
     local -A CORE_ARG_STORE
     local -A CORE_ARG_VALUE
     local -a ARG_OTHERS
+    local -n ARGS=CORE_ARG_VALUE
 '
 
 # show help
