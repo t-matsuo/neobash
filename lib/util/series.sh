@@ -13,6 +13,8 @@
 
 nb::require "core/log.sh core/arg.sh"
 nb::command_check "base64"
+nb::check_bash_min_version "4.3.0" \
+    || core::log::error_exit "bash version 4.3.0 or higher is required for usingutil/series.sh library to use nameref"
 
 # get original value name of referenced variable
 __util::series::get_original_val_name__() {
