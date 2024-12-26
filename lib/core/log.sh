@@ -1,15 +1,63 @@
 #!/usr/bin/env bash
-
 # Copyright 2024 MATSUO Takatoshi (matsuo.tak@gmail.com)
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Released under the MIT licence: http://opensource.org/licenses/mit-license
+
+# @file core/log.sh
+# @brief Neobash core logging library
+# @description
+# * Output logs of various types, such as debug, info, notice, error, crit, and stacktrace.
+# * Log message format is plain or json.
+# * Log message is formatted with color and timestamp by default.
+# * Can select output destination of log to stdout/stderr or file.
+# * Catch unexpected SIGINT, SIGTERM, and SIGERR, and output the stacktrace.
+#
+# This library can change its behavior by setting the following environment variables.
+#
+# Controlling log level. Set true or false.
+# * LOG_CRIT : Switch the output of the CRIT log. default: ``true``
+# * LOG_ERROR : Switch the output of the ERROR log. default: ``true``
+# * LOG_NOTICE : Switch the output of the NOTICE log. default: ``true``
+# * LOG_INFO : Switch the output of the INFO log. default: ``true``
+# * LOG_DEBUG : Switch the output of the DEBUG log. default: ``false``
+#
+# Controlling log format. Set true or false.
+# * LOG_FORMAT : Set the log format ``plain`` or ``json``. default: ``plain``
+# * LOG_STACK_TRACE : Switch the output of the stack trace for CRIT, DEBUG, and ERROR logs. default: ``true``
+# * LOG_TIMESTAMP : Switch the output of the timestamp to the all logs. default: ``true``
+# * LOG_TIMESTAMP_FORMAT : Set the timestamp format. please specify the format using printf formatting. default: ``%F-%T%z``
+#
+# Example: enable debug log and disable stack trace.
+# ```bash
+# LOG_DEBUG=true LOG_STACK_TRACE=false ./myscript.sh
+# ````
+#
+# Controlling log output destination.
+# * LOG_TERMINAL : switch the output of the log to the terminal. default: ``true``
+# * LOG_FILE : Set the log file name. default: ``/dev/null`` (no output to file)
+#
+# Controlling log prefix.
+# * LOG_PREFIX_CRIT : Set the log prefix for CRIT log. default: ``CRIT``
+# * LOG_PREFIX_ERROR : Set the log prefix for ERROR log. default: ``ERROR``
+# * LOG_PREFIX_NOTICE : set the log prefix for NOTICE log. default: ``NOTICE``
+# * LOG_PREFIX_INFO : set the log prefix for INFO log. default: ``INFO``
+# * LOG_PREFIX_DEBUG : set the log prefix for DEBUG log. default: ``DEBUG``
+# * LOG_PREFIX_TRACE : set the log prefix for TRACE log. default: ``TRACE``
+#
+# Controlling debug log filter.
+# * LOG_DEBUG_TARGET_FUNC : select the debug log by function name. default: ``''``
+# * LOG_DEBUG_TARGET_FILE : select the debug log by file name. default: ``''``
+# * LOG_DEBUG_UNTARGET_FUNC : drop the debug log by function name. default: ``''``
+# * LOG_DEBUG_UNTARGET_FILE : drop the debug log by file name. default: ``''``
+#
+# Example: enable debug log for ``mylib::get_xxx`` function only.
+# ```bash
+# LOG_DEBUG_TARGET_FUNC="mylib::get_xxx" ./myscript.sh
+# ```
+#
+# Example: enable debug log for ``mylib/myutil.sh`` file only.
+# ```bash
+# LOG_DEBUG_TARGET_FILE="mylib/myutil.sh" ./myscript.sh
+# ```
 
 #### Logging Parameters ####
 # color palette
@@ -65,15 +113,16 @@ declare -i -g CORE_LOG_COLOR_DEBUG="${CORE_LOG_COLOR_YELLOW}"
 declare -i -g CORE_LOG_COLOR_TRACE="${CORE_LOG_COLOR_YELLOW}"
 
 # Log Prefix
-: "${CORE_LOG_LEVEL_CRIT:=CRIT}"
-: "${CORE_LOG_LEVEL_ERROR:=ERROR}"
-: "${CORE_LOG_LEVEL_NOTICE:=NOTICE}"
-: "${CORE_LOG_LEVEL_INFO:=INFO}"
-: "${CORE_LOG_LEVEL_DEBUG:=DEBUG}"
-: "${CORE_LOG_LEVEL_TRACE:=TRACE}"
+: "${LOG_PREFIX_CRIT:=CRIT}"
+: "${LOG_PREFIX_ERROR:=ERROR}"
+: "${LOG_PREFIX_NOTICE:=NOTICE}"
+: "${LOG_PREFIX_INFO:=INFO}"
+: "${LOG_PREFIX_DEBUG:=DEBUG}"
+: "${LOG_PREFIX_TRACE:=TRACE}"
 #### Logging Parameters End ####
 
-# wrapper for echo with color
+# @internal
+# @description wrapper for echo with color
 __core::log::color_terminal__() {
     local COLOR="$1"
     local LOG="$2"
@@ -81,7 +130,8 @@ __core::log::color_terminal__() {
     return 0
 }
 
-# wrapper for echo with color for stdout
+# @internal
+# @description wrapper for echo with color for stdout
 __core::log::stdout__() {
     local COLOR="$1"
     local LOG="$2"
@@ -95,7 +145,8 @@ __core::log::stdout__() {
     return 0
 }
 
-# wrapper for echo with color for stderr
+# @internal
+# @description wrapper for echo with color for stderr
 __core::log::stderr__() {
     local COLOR="$1"
     local LOG="$2"
@@ -109,7 +160,8 @@ __core::log::stderr__() {
     return 0
 }
 
-# wrapper for terminal output
+# @internal
+# @description wrapper for terminal output
 __core::log__() {
     local DATE
     local LEVEL=$1
@@ -175,7 +227,9 @@ __core::log__() {
     return 0
 }
 
-# logging stack trace
+# @description Logger for stack trace.
+# @noargs
+# @exitcode 0
 core::log::stack_trace() {
     local caller="${FUNCNAME[1]}"
     local i
@@ -183,60 +237,81 @@ core::log::stack_trace() {
 
     if [[ "$LOG_STACK_TRACE" == "true" ]]; then
         for ((i=1;i<${#FUNCNAME[*]}; i++)); do
-            __core::log__ "${CORE_LOG_LEVEL_TRACE}" "${space}${FUNCNAME[$i]}() ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}"
+            __core::log__ "${LOG_PREFIX_TRACE}" "${space}${FUNCNAME[$i]}() ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}"
             space="  $space"
         done
     fi
     return 0
 }
 
-# logging crit
-# arg1: message
+# @description Logger for crit.
+#
+# Alias is defined as ``log::crit``
+# @arg $1 string log message.
+# @stderr output critical log message and stack trace.
+# @exitcode 1
 core::log::crit() {
-    __core::log__ "${CORE_LOG_LEVEL_CRIT}" "${1:-}"
+    __core::log__ "${LOG_PREFIX_CRIT}" "${1:-}"
     core::log::stack_trace
     exit 1
 }
 
-# logging error
-# arg1: message
+# @description Logger for error.
+#
+# Alias is defined as ``log::error``
+# @arg $1 string log message.
+# @stderr output error log message and stack trace.
+# @exitcode 0
 core::log::error() {
-    __core::log__ "${CORE_LOG_LEVEL_ERROR}" "${1:-}"
+    __core::log__ "${LOG_PREFIX_ERROR}" "${1:-}"
     core::log::stack_trace
     return 0
 }
 
-# logging error and exit
-# arg1: message
+# @description Logger for error and exit script.
+#
+# Alias is defined as ``log::error_exit``
+# @arg $1 string log message.
+# @stderr output error log message and stack trace.
+# @exitcode 1
 core::log::error_exit() {
     core::log::error "${1:-}"
     exit 1
 }
 
-# catch unexpected stderr
-core::log::stderr() {
+# @internal
+# @description reader for stderr.
+__core::log::read_stderr__() {
     while read -r line; do
-        __core::log__ "${CORE_LOG_LEVEL_ERROR}" "${line}"
+        __core::log__ "${LOG_PREFIX_ERROR}" "${line}"
     done
 }
 
-# logging info
-# arg1: message
+# @description Logger for notice.
+#
+# Alias is defined as ``log::notice``
+# @arg $1 string log message.
+# @exitcode 0
 core::log::notice() {
-    [[ "$LOG_NOTICE" == "true" ]] && __core::log__ "${CORE_LOG_LEVEL_NOTICE}" "${1:-}"
+    [[ "$LOG_NOTICE" == "true" ]] && __core::log__ "${LOG_PREFIX_NOTICE}" "${1:-}"
     return 0
 }
 
-# logging info
-# arg1: message
+# @description Logger for info.
+#
+# Alias is defined as ``log::info``
+# @arg $1 string log message.
+# @exitcode 0
 core::log::info() {
-    [[ "$LOG_INFO" == "true" ]] && __core::log__ "${CORE_LOG_LEVEL_INFO}" "${1:-}"
+    [[ "$LOG_INFO" == "true" ]] && __core::log__ "${LOG_PREFIX_INFO}" "${1:-}"
     return 0
 }
 
-# logging debug
-# arg1: message
-# arg2: if true, show stackstrace
+# @description Logger for debug.
+#
+# Alias is defined as ``log::debug``
+# @arg $1 string log message.
+# @arg $2 bool if true, show stackstrace. default: ``false``
 core::log::debug() {
     local target
     local SHOW_STACK_TRACE=${2:-}
@@ -258,7 +333,7 @@ core::log::debug() {
                 fi
             done
         fi
-         __core::log__ "${CORE_LOG_LEVEL_DEBUG}" "$1   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
+         __core::log__ "${LOG_PREFIX_DEBUG}" "$1   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
          [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace
          return 0
     fi
@@ -267,7 +342,7 @@ core::log::debug() {
     if [[ -n "${LOG_DEBUG_TARGET_FUNC:-}" ]]; then
         for target in ${LOG_DEBUG_TARGET_FUNC}; do
             if [[ ${FUNCNAME[1]} =~ $target ]]; then
-                __core::log__ "${CORE_LOG_LEVEL_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
+                __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
                 [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace
             fi
         done
@@ -277,7 +352,7 @@ core::log::debug() {
     if [[ -n "${LOG_DEBUG_TARGET_FILE:-}" ]]; then
         for target in ${LOG_DEBUG_TARGET_FILE}; do
             if [[ ${BASH_SOURCE[1]} =~ $target ]]; then
-                __core::log__ "${CORE_LOG_LEVEL_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
+                __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
                 [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace
             fi
         done
@@ -285,7 +360,9 @@ core::log::debug() {
     return 0
 }
 
-# switch terminal log color
+# @internal
+# @description Switching terminal log color.
+# If output to terminal, enable log color, otherwise disable log color.
 __core::log::switch_terminal_color__() {
     if [[ -z "${LOG_COLOR_STDOUT:-}" ]]; then
         # switch stdout color
@@ -332,27 +409,20 @@ trap 'core::log::debug "catch SIGTERM"; core::log::stack_trace; exit 1' TERM
 trap 'core::log::debug "catch SIGINT";  CORE_LOG_IS_SIGINT="true"' INT
 
 # can omit core:: in core library
-alias log::enable_stack_trace='core::log::enable_stack_trace'
-alias log::disable_stack_trace='core::log::disable_stack_trace'
-alias log::enable_stdout_color='core::log::enable_stdout_color'
-alias log::disable_stdout_color='core::log::disable_stdout_color'
-alias log::enable_stderr_color='core::log::enable_stderr_color'
-alias log::disable_stderr_color='core::log::disable_stderr_color'
 alias log::stack_trace='core::log::stack_trace'
 alias log::crit='core::log::crit'
 alias log::error='core::log::error'
 alias log::error_exit='core::log::error_exit'
-alias log::stderr='core::log::stderr'
 alias log::notice='core::log::notice'
 alias log::info='core::log::info'
 alias log::debug='core::log::debug'
 
 #### init ####
 
-# NOTE: need to call it before 'exec 2> >(core::log::stderr)'
+# NOTE: need to call it before 'exec 2> >(__core::log::read_stderr__)'
 __core::log::switch_terminal_color__
 
 # save stderr
 exec {stderr}>&2
 # redirect stderr to append header and color settings
-exec 2> >(core::log::stderr)
+exec 2> >(__core::log::read_stderr__)
