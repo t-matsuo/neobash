@@ -2,10 +2,33 @@
 # Copyright 2024 MATSUO Takatoshi (matsuo.tak@gmail.com)
 # Released under the MIT licence: http://opensource.org/licenses/mit-license
 
-nb::require "core/log.sh"
+# @file core/arg.sh
+# @brief Neobash core library for parsing arguments.
+# @description
+# * Can define bash script or function options and parse them.
+# * Can define required options or optional options.
+# * Can define an option name alias.
+# * Can define a default value.
+# * Can Generate option usage.
+# * Execute show_help function you define, if ``-h`` or ``--help`` option is passed.
+# * Execute show_version function you define, if ``-v`` or ``--version`` option is passed.
+# * Arguments type can be one of: string, int, bool, and can check value while parsing arguments.
+#
+# ### Initializing
+#
+# If you want to parse arguments in a bash script, please initialize it with the following command.
+#
+# ```bash
+# arg::init_global
+# ```
+#
+# On the other hand, if you want to parse arguments in a function, please initialize it with the following command inside the function.
+#
+# ```bash
+# args::init_local
+# ```
 
-#### Parsing args ####
-# parse args
+# @description Initialize global variables for script.
 alias core::arg::init_global='
     CORE_ARG_LABEL=""
     declare -A CORE_ARG_OPTION_LABEL
@@ -21,6 +44,7 @@ alias core::arg::init_global='
     declare -n ARGS=CORE_ARG_VALUE
 '
 
+# @description Initialize local variables for function.
 alias core::arg::init_local='
     local CORE_ARG_LABEL=""
     local -A CORE_ARG_OPTION_LABEL
@@ -36,12 +60,13 @@ alias core::arg::init_local='
     local -n ARGS=CORE_ARG_VALUE
 '
 
-# show help
-core::arg::help() {
-    echo "Usage: source $0"
-}
-
-# cleck if label exists
+# @internal
+# @description Check if label exists.
+# @args $1 string Label
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 Loabel found.
+# @exitcode 1 Label not found or Error.
 __core::arg::has_label__() {
     local LABEL="$1"
     local label
@@ -53,7 +78,13 @@ __core::arg::has_label__() {
     return 1
 }
 
-# cleck if option exists
+# @internal
+# @description Check if option exists.
+# @args $1 string Option
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 Option found.
+# @exitcode 1 Option not found or Error.
 __core::arg::has_option__() {
     local OPTION="$1"
     [[ -z "$OPTION" ]] && core::log::error_exit "args is empty"
@@ -63,22 +94,21 @@ __core::arg::has_option__() {
     return 1
 }
 
-# Add an option
-# -l: label (required)
-# -o: option name (required)
-# -t: type
-#     type can be one of: string, int, bool
-#     default is string
-# -r: required
-#     required can be one of: true, false
-#     default is false
-# -h: help
-#     deault is "no help message for this option"
-# -s: store
-#     store can be one of: none, true, false
-#     default is none
-# -d: default value (optional)
-#     default is ""
+# @description Define an option specifications
+# * Alias is defined as ``arg::add_option``
+# * Need to initialize variables first with ``core::arg::init_global`` or ``core::arg::init_local``.
+# * ``-h `` ``--help`` ``l-v`` ``--version`` are defined by default so you cannot use them as option name.
+# @option -l <value> (string)(required): Label name to identify.
+# @option -o <value> (string)(required): Option name such as ``-m`` or ``--myarg``.
+# @option -t <value> (string)(optional): Option type. type can be one of: string, int, bool. default: ``string``
+# @option -r <value> (bool)(optional): Define if the ophtion is required. It can be one of: true, false. default: ``false``
+# @option -d <value> (string)(optional): Default value if the option is not specified. default: if type is  string then ``""``, if type is int then ``0``, if type is bool then ``false``
+# @option -s <value> (string)(optional): Store option value. It can be one of: none, true, false. If none, the option require value otherwise not. If true and the option is specified, the value is true, otherwise false. default: ``none``
+# @option -h <value> (string)(optional): Help message. default: ``no help message for this option``
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::add_option() {
     local LABEL
     local OPTION
@@ -173,9 +203,17 @@ core::arg::add_option() {
     CORE_ARG_DEFAULT["$LABEL"]="$DEFAULT"
 }
 
-# add option alias
-# -l: label (required)
-# -a: alias (required)
+# @description Define an option alias name.
+# * Alias is defined as ``arg::add_option_alias``
+# * You need to define option first with ``core::arg::add_option``.
+# * ``-h `` ``--help`` ``-v`` ``--version`` are defined by default so you cannot use them as option.
+# * You can define only one alias per label.
+# @option -l <value> (string)(required): Label defined by ``arg::add_option``
+# @option -a <value> (string)(optional): Option alias name such as ``--m`` for ``--myarg``.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::add_option_alias() {
     local LABEL
     local ALIAS
@@ -218,7 +256,12 @@ core::arg::add_option_alias() {
     fi
 }
 
-# check if arg is option
+# @internal
+# @description Check if arg is defined option
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 __core::arg::is_option__() {
     local OPTION="$1"
     [[ -z "${OPTION:-}" ]] && core::log::error_exit "args is empty"
@@ -227,9 +270,14 @@ __core::arg::is_option__() {
     return 0
 }
 
-# check value type
-# arg1: type
-# arg2: value
+# @internal
+# @description Check value type
+# @arg $1 string arugment type
+# @arg $2 string argument value
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 __core::arg::check_value_type__() {
     local TYPE="$1"
     local VALUE="$2"
@@ -248,7 +296,26 @@ __core::arg::check_value_type__() {
     return 0
 }
 
-# parse args
+# @description Parse arguments.
+# * Alias is defined as ``arg::parse``
+# #### Reserved Options
+# * ``-h`` or ``--help`` : ``show_help`` function you defined is executed.
+# * ``-v``" or ``--version`` : ``show_version`` function you defined is executed.
+# #### Validation
+# An error occurs if a value other than an integer is passed to the int type,
+# or if a value other than true or false is passed to the bool type. Additionally,
+# an error will occur if an undefined option is passed.
+# #### Remaining arguments
+# If the argument '--' is passed, all subsequent arguments will be stored in ARG_OTHERS variable.
+# ##### For example
+# * If you pass the arguments ``-a 1 -b 2 --c 3 ddd eee fff``, then ``ARG_OTHERS=(ddd eee fff)`` will be set.
+# * If you pass the arguments ``-a 1 -- -b 2 --c 3 ddd eee fff``, then ARG_OTHERS=(-b 2 --c 3 ddd eee fff) will be set.
+#
+# @arg $@ string please specify all arguments as ``"$@"``
+# @stdout Help text if ``-h`` or ``--help`` is specified. Version information if ``-v`` or ``--version`` is specified.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::parse() {
     local ARGS=("$@")
     local arg
@@ -359,8 +426,13 @@ core::arg::parse() {
     done
 }
 
-# get value
-# -l: label (required)
+# @description Get a value.
+# * Alias is defined as ``arg::get_value``
+# @option -l <value> (string)(required): Label defined by ``arg::add_option``
+# @stdout Show value.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::get_value() {
     local LABEL
     local OPTIND
@@ -387,9 +459,14 @@ core::arg::get_value() {
     echo "${CORE_ARG_VALUE[$LABEL]}"
 }
 
-# update value
-# -l: label (required)
-# -v: value (required)
+# @description Update a value.
+# * Alias is defined as ``arg::set_value``
+# @option -l <value> (string)(required): Label defined by ``arg::add_option``
+# @option -v <value> (string)(optional): New value.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::set_value() {
     local LABEL
     local VALUE
@@ -424,12 +501,17 @@ core::arg::set_value() {
     CORE_ARG_VALUE["$LABEL"]="$VALUE"
 }
 
-# delete value
-# -l label (required)
+# @description Delete a value.
+# * Alias is defined as ``arg::del_value``
+# * If option type is string, value set empty string.
+# * If option type is int, value set 0.
+# * If option type is bool, value set false.
 #
-# if type is string, value set empty string.
-# if type is int, value set 0.
-# if type is bool, value set false.
+# @option -l <value> (string)(required): Label defined by ``arg::add_option``
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::del_value() {
     local LABEL
     local OPTIND
@@ -461,7 +543,12 @@ core::arg::del_value() {
     esac
 }
 
-# show all value
+# @description Show all values after ``core::arg::parse`` is called.
+# * Alias is defined as ``arg::get_all_value``
+# @stdout All labels and their values.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::get_all_value() {
     local label
     for label in $CORE_ARG_LABEL; do
@@ -470,7 +557,12 @@ core::arg::get_all_value() {
     echo "OTHER ARGS=${ARG_OTHERS[*]}"
 }
 
-# show all options as csv
+# @description Show all options defined by ``arg::add_option``.
+# * Alias is defined as ``arg::get_all_option``
+# @stdout All options. Format is csv.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::get_all_option() {
     local label
     echo -n "label,"
@@ -493,7 +585,14 @@ core::arg::get_all_option() {
     done
 }
 
-# show usage for help message
+# @description Show option usages for your script help text.
+# * Alias is defined as ``arg::show_usage``
+# * This function is designed to embed the usage of options in the script's help message.
+# @stdout Show usage message for option.
+# @stderr Error and debug message.
+# @arg $1 (string) (optional): Line prefix. This prefix is intended to be used when you want to decrease the indentation at the beginning of the usage of options. default: ``""``
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 core::arg::show_usage() {
     local PREFIX=""
     local label
@@ -533,10 +632,9 @@ core::arg::show_usage() {
     done
 }
 
-# can omit core:: in core library
+# define aliases
 alias arg::init_global='core::arg::init_global'
 alias arg::init_local='core::arg::init_local'
-alias arg::help='core::arg::help'
 alias arg::add_option='core::arg::add_option'
 alias arg::add_option_alias='core::arg::add_option_alias'
 alias arg::parse='core::arg::parse'
