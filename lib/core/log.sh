@@ -20,7 +20,7 @@
 # * LOG_INFO : Switch the output of the INFO log. default: ``true``
 # * LOG_DEBUG : Switch the output of the DEBUG log. default: ``false``
 #
-# Controlling log format. Set true or false.
+# Controlling log format.
 # * LOG_FORMAT : Set the log format ``plain`` or ``json``. default: ``plain``
 # * LOG_STACK_TRACE : Switch the output of the stack trace for CRIT, DEBUG, and ERROR logs. default: ``true``
 # * LOG_TIMESTAMP : Switch the output of the timestamp to the all logs. default: ``true``
@@ -291,6 +291,7 @@ __core::log::read_stderr__() {
 #
 # Alias is defined as ``log::notice``
 # @arg $1 string log message.
+# @stdout Notice log.
 # @exitcode 0
 core::log::notice() {
     [[ "$LOG_NOTICE" == "true" ]] && __core::log__ "${LOG_PREFIX_NOTICE}" "${1:-}"
@@ -301,6 +302,7 @@ core::log::notice() {
 #
 # Alias is defined as ``log::info``
 # @arg $1 string log message.
+# @stdout Info log.
 # @exitcode 0
 core::log::info() {
     [[ "$LOG_INFO" == "true" ]] && __core::log__ "${LOG_PREFIX_INFO}" "${1:-}"
@@ -312,6 +314,8 @@ core::log::info() {
 # Alias is defined as ``log::debug``
 # @arg $1 string log message.
 # @arg $2 bool if true, show stackstrace. default: ``false``
+# @stderr Debug log.
+# @exitcode 0
 core::log::debug() {
     local target
     local SHOW_STACK_TRACE=${2:-}

@@ -3,7 +3,34 @@
 # Released under the MIT licence: http://opensource.org/licenses/mit-license
 # shellcheck disable=SC1090
 
-# for importing library
+# @file neobash.sh
+# @brief Neobash bootstrap library
+# @description
+# * Provide library management functions.
+# * Load core library such as ``core/log.sh`` and ``core/arg.sh`` to manage logging and parsing arguments.
+# ### Bootstrap
+# ```bash
+# source /path/to/lib/neobash.sh
+# ```
+#
+# If source it, neobash defines global variables.
+# * NB_DIR : neobash.sh directory
+# * NB_LIB_PATH : Library path. default is ``${NB_DIR}/lib``
+# * NB_LIBS : Loaded libraries.
+#
+# And chnage bash configuration.
+# * shopt -s expand_aliases
+# * set -o pipefail
+# * set -u
+
+# @description Import library.
+# * If library is already loaded, do nothing.
+# * If path is invalid, script is forcedly exited.
+# @arg $1 string Library name such as ``core/log.sh``. Name path is relative to ``NB_LIB_PATH``.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 nb::import() {
     local file
     local libname
@@ -48,24 +75,41 @@ nb::import() {
     fi
 }
 
-# add library path to import
+# @description Add library path.
+# * If path is invalid, script is forcedly exited.
+# @arg $1 Library path.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
 nb::add_lib_path() {
     [[ -z "${1:-}" ]] && core::log::crit "library path is empty"
     [[ ! -d "$1" ]] && core::log::crit "library path '$1' not found"
     NB_LIB_PATH=("$1" "${NB_LIB_PATH[@]}")
 }
 
-# get library path
+# @description Show all library paths.
+# @stdout Library paths added by ``nb::add_lib_path``.
+# @stderr None.
+# @exitcode 0
 nb::get_lib_path() {
     echo "${NB_LIB_PATH[@]}"
 }
 
-# list loaded libraries
+# @description Show all loaded library.
+# @stdout Loaded libraries.
+# @stderr None.
+# @exitcode 0
 nb::get_libs() {
     echo "${NB_LIBS[@]}"
 }
 
-# search loaded libraries
+# @description Check if library is loaded.
+# @arg $1 Library name.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If loaded.
+# @exitcode 1 If not loaded or error occured.
 nb::has_lib() {
     [[ -z "${1:-}" ]] && core::log::error_exit "library name is empty"
     if [[ " ${NB_LIBS[*]} " =~ [[:space:]]${1}[[:space:]] ]]; then
@@ -75,6 +119,14 @@ nb::has_lib() {
 }
 
 # check depending libraries
+
+# @description Define required libraries in each library.
+# * If library is not loaded or argument is invalid, script is forcedly exited.
+# @arg $1 Library name.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If loaded.
+# @exitcode 1 If not loaded or error occured.
 nb::require() {
     local lib
     [[ -z "${1:-}" ]] && core::log::error_exit "library name is empty"
@@ -84,7 +136,13 @@ nb::require() {
     return 0
 }
 
-# check depending command
+# @description Check depending command.
+# * If command is not found or argument is invalid, script is forcedly exited.
+# @arg $1 Command name.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If exists.
+# @exitcode 1 Error occured.
 nb::command_check() {
     local cmd
     [[ -z "${1:-}" ]] && core::log::error_exit "cmmand name is empty"
@@ -94,8 +152,14 @@ nb::command_check() {
     return 0
 }
 
-# check bash minimum version
-# arg1: minimum version
+# @description Check bash minimum version.
+# * If the version does not meet the requirements or argument is invalid, script is forcedly exited.
+# * Version format is ``MAJOR.MINOR.PATCH``.
+# @arg $1 Version number.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If the version meets the requirements.
+# @exitcode 1 Error occured.
 nb::check_bash_min_version() {
     local version=$1
     local major
@@ -117,8 +181,14 @@ nb::check_bash_min_version() {
     return 0
 }
 
-# check bash maximum version
-# arg1: maximum version
+# @description Check bash maximum version.
+# * If the version does not meet the requirements or argument is invalid, script is forcedly exited.
+# * Version format is ``MAJOR.MINOR.PATCH``.
+# @arg $1 Version number.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If the version meets the requirements.
+# @exitcode 1 Error occured.
 nb::check_bash_max_version() {
     local version=$1
     local major
@@ -141,6 +211,13 @@ nb::check_bash_max_version() {
     return 0
 }
 
+# @internal
+# @description Initialize neobash.
+# * If environment is invalid, script is forcedly exited.
+# @stdout None.
+# @stderr Error and debug message.
+# @exitcode 0 If the version meets the requirements.
+# @exitcode 1 Error occured.
 __nb::init__() {
     local required_bash_verion="4.2.0"
     NB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)"

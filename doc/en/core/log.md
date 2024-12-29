@@ -19,7 +19,7 @@ Controlling log level. Set true or false.
 * LOG_INFO : Switch the output of the INFO log. default: ``true``
 * LOG_DEBUG : Switch the output of the DEBUG log. default: ``false``
 
-Controlling log format. Set true or false.
+Controlling log format.
 * LOG_FORMAT : Set the log format ``plain`` or ``json``. default: ``plain``
 * LOG_STACK_TRACE : Switch the output of the stack trace for CRIT, DEBUG, and ERROR logs. default: ``true``
 * LOG_TIMESTAMP : Switch the output of the timestamp to the all logs. default: ``true``
@@ -146,6 +146,10 @@ Alias is defined as ``log::notice``
 
 * 0
 
+#### Output on stdout
+
+* Notice log.
+
 ### core::log::info
 
 Logger for info.
@@ -160,6 +164,10 @@ Alias is defined as ``log::info``
 
 * 0
 
+#### Output on stdout
+
+* Info log.
+
 ### core::log::debug
 
 Logger for debug.
@@ -170,4 +178,12 @@ Alias is defined as ``log::debug``
 
 * **$1** (string): log message.
 * **$2** (bool): if true, show stackstrace. default: ``false``
+
+#### Exit codes
+
+* 0
+
+#### Output on stderr
+
+* Debug log.
 
