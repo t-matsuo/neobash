@@ -1,3 +1,6 @@
 [submodule "submodule/shdoc"]
 	path = submodule/shdoc
 	url = https://github.com/reconquest/shdoc.git
+[submodule "submodule/bashunit"]
+	path = submodule/bashunit
+	url = https://github.com/TypedDevs/bashunit.git
