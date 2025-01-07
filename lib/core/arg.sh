@@ -257,11 +257,11 @@ core::arg::add_option_alias() {
 }
 
 # @internal
-# @description Check if arg is defined option
+# @description Check if arg is option or not.
 # @stdout None.
 # @stderr Error and debug message.
-# @exitcode 0 If successfull.
-# @exitcode 1 If failed.
+# @exitcode 0 It's option.
+# @exitcode 1 IT's not option.
 __core::arg::is_option__() {
     local OPTION="$1"
     [[ -z "${OPTION:-}" ]] && core::log::error_exit "args is empty"
