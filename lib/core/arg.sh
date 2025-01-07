@@ -422,9 +422,33 @@ core::arg::parse() {
         if [[ ${CORE_ARG_REQUIRED["$label"]} == "false" && -z ${CORE_ARG_VALUE["$label"]:-} ]]; then
             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
             case ${CORE_ARG_TYPE["$label"]} in
-                string) [[ ! -v ${CORE_ARG_DEFAULT["$label"]} ]] && CORE_ARG_VALUE["$label"]="";;
-                int)    [[ ! -v ${CORE_ARG_DEFAULT["$label"]} ]] && CORE_ARG_VALUE["$label"]="0";;
-                bool)   [[ ! -v ${CORE_ARG_DEFAULT["$label"]} ]] && CORE_ARG_VALUE["$label"]="false";;
+                string) if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
+                            core::log::debug "$label default string value is none"
+                            CORE_ARG_DEFAULT["$label"]=""
+                            CORE_ARG_VALUE["$label"]=""
+                        else
+                            core::log::debug "$label default string value is ${CORE_ARG_DEFAULT["$label"]}"
+                            CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
+                        fi
+                        ;;
+                int)    if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
+                            core::log::debug "$label default int value is none"
+                            CORE_ARG_DEFAULT["$label"]="0"
+                            CORE_ARG_VALUE["$label"]="0"
+                        else
+                            core::log::debug "$label default int value is ${CORE_ARG_DEFAULT["$label"]}"
+                            CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
+                        fi
+                        ;;
+                bool)   if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
+                            core::log::debug "$label default bool value is none"
+                            CORE_ARG_DEFAULT["$label"]="false"
+                            CORE_ARG_VALUE["$label"]="false"
+                        else
+                            core::log::debug "$label default bool value is ${CORE_ARG_DEFAULT["$label"]}"
+                            CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
+                        fi
+                        ;;
                 *) core::log::error_exit "invalid type: ${CORE_ARG_TYPE[$label]}";;
             esac
         fi
@@ -506,11 +530,11 @@ core::arg::set_value() {
     CORE_ARG_VALUE["$LABEL"]="$VALUE"
 }
 
-# @description Delete a value.
+# @description Delete a value and set default.
 # * Alias is defined as ``arg::del_value``
-# * If option type is string, value set empty string.
-# * If option type is int, value set 0.
-# * If option type is bool, value set false.
+# * If option type is string, value set empty string if default value is not set.
+# * If option type is int, value set 0 if default value is not set.
+# * If option type is bool, value set false if default value is not set.
 #
 # @option -l <value> (string)(required): Label defined by ``arg::add_option``
 # @stdout None.
@@ -540,10 +564,16 @@ core::arg::del_value() {
     if ! __core::arg::has_label__ "$LABEL"; then
         core::log::error_exit "label \"$LABEL\" dose not defined"
     fi
-    case ${CORE_ARG_TYPE["$label"]} in
-        string) CORE_ARG_VALUE["$LABEL"]="";;
-        int)    CORE_ARG_VALUE["$LABEL"]="0";;
-        bool)   CORE_ARG_VALUE["$LABEL"]="false";;
+    case ${CORE_ARG_TYPE["$LABEL"]} in
+        string) core::log::debug "delete $LABEL string value"
+                CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
+                ;;
+        int)    core::log::debug "delete $LABEL int value"
+                CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
+                ;;
+        bool)   core::log::debug "delete $LABEL bool value"
+                CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
+                ;;
         *) core::log::crit "invalid type: ${CORE_ARG_TYPE[$LABEL]}";;
     esac
 }
