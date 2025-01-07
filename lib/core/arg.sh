@@ -164,8 +164,13 @@ core::arg::add_option() {
     [[ "$REQUIRED" != "true" && "$REQUIRED" != "false" ]] && core::log::error_exit "invalid required \"$REQUIRED\", $OPTION required(-r) needs 'true' or 'false'"
     [[ "$STORE" != "none" && "$STORE" != "true" && "$STORE" != "false" ]] \
         && core::log::error_exit "invalid store \"$STORE\", $OPTION store(-o) needs 'none' or 'true' or 'false'"
-    if [[ "$STORE" == "true" || "$STORE" == "false" ]]; then
+    if [[ "$STORE" == "true" ]]; then
         TYPE="bool"
+        DEFAULT="false"
+    fi
+    if [[ "$STORE" == "false" ]]; then
+        TYPE="bool"
+        DEFAULT="true"
     fi
 
     # check label
