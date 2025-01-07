@@ -193,7 +193,7 @@ core::arg::add_option() {
     fi
 
     # add option
-    core::log::debug "add LABEL: $LABEL, OPTION: $OPTION, TYPE: $TYPE, REQUIRED: $REQUIRED, HELP: $HELP, DEFAULT: $DEFAULT"
+    core::log::debug "add LABEL: $LABEL, OPTION: $OPTION, TYPE: $TYPE, REQUIRED: $REQUIRED, HELP: $HELP, STORE: $STORE, DEFAULT: $DEFAULT"
     CORE_ARG_LABEL="$CORE_ARG_LABEL $LABEL"
     CORE_ARG_OPTION_LABEL["$OPTION"]="$LABEL"
     if [[ "$OPTION" =~ ^-- ]]; then
