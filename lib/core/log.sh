@@ -205,6 +205,9 @@ __core::log__() {
             "core::log::debug")
                 __core::log::stderr__ "${CORE_LOG_COLOR_DEBUG}" "$LOG"
                 ;;
+            "__core::log::read_stderr__")
+                __core::log::stderr__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
+                ;;
             "core::log::stack_trace")
                 caller2="${FUNCNAME[2]}"
                 case "$caller2" in
