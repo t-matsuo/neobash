@@ -208,11 +208,11 @@ Update a value.
 
 ### core::arg::del_value
 
-Delete a value.
+Delete a value and set default.
 * Alias is defined as ``arg::del_value``
-* If option type is string, value set empty string.
-* If option type is int, value set 0.
-* If option type is bool, value set false.
+* If option type is string, value set empty string if default value is not set.
+* If option type is int, value set 0 if default value is not set.
+* If option type is bool, value set false if default value is not set.
 
 #### Options
 
