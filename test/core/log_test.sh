@@ -56,6 +56,64 @@ test_core::log::info() {
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info log" "$OUTPUT"
 }
 
+test_core::log::info_with_escaping_line_break() {
+  local TEXT="info line break
+log"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( LOG_ESCAPE_LINE_BREAK="true" core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info line break\\\\nlog" "$OUTPUT"
+}
+
+test_core::log::info_without_escaping_line_break() {
+  local TEXT="info line break
+log"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( LOG_ESCAPE_LINE_BREAK="false" core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info line break
+log" "$OUTPUT"
+}
+
+test_core::log::info_with_escaping_escaped_line_break() {
+  local TEXT="info line break\nlog"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( LOG_ESCAPE_LINE_BREAK="true" core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info line break\\\\nlog" "$OUTPUT"
+}
+
+test_core::log::info_without_escaping_escaped_line_break() {
+  local TEXT="info line break\nlog"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( LOG_ESCAPE_LINE_BREAK="false" core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info line break
+log" "$OUTPUT"
+}
+
+test_core::log::info_with_escape_sequence() {
+  local TEXT="info none printable \c char"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( LOG_ESCAPE_LINE_BREAK="true" core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info none printable \\\\c char" "$OUTPUT"
+}
+
+test_core::log::info_with_control_character() {
+  local TEXT="info control	char"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info control	char" "$OUTPUT"
+}
+
 test_core::log::debug() {
   core::log::debug "debug log"
   assert_exit_code "0"

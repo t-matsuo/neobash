@@ -7,6 +7,7 @@ Neobash core logging library
 * Output logs of various types, such as debug, info, notice, error, crit, and stacktrace.
 * Log message format is plain or json.
 * Log message is formatted with color and timestamp by default.
+* Control characters in log message are removed.
 * Can select output destination of log to stdout/stderr or file.
 * Catch unexpected SIGINT, SIGTERM, and SIGERR, and output the stacktrace.
 
@@ -24,6 +25,7 @@ Controlling log format.
 * LOG_STACK_TRACE : Switch the output of the stack trace for CRIT, DEBUG, and ERROR logs. default: ``true``
 * LOG_TIMESTAMP : Switch the output of the timestamp to the all logs. default: ``true``
 * LOG_TIMESTAMP_FORMAT : Set the timestamp format. please specify the format using printf formatting. default: ``%F-%T%z``
+* LOG_ESCAPE_LINE_BREAK: switch escaping of line breaks and \n to \\n. default: ``true`` (escape line breaks and \n to \\n)
 
 Example: enable debug log and disable stack trace.
 ```bash

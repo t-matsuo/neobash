@@ -56,8 +56,8 @@ myfunc() {
     local ENC
     # serialize ORG to ENC
     util::series::serialize --from ORG --to ENC
-    log::info "original array=\n${ORG[*]}\n"
-    log::info "serialized array=\n$ENC\n"
+    LOG_ESCAPE_LINE_BREAK=false log::info "original array=\n${ORG[*]}\n"
+    LOG_ESCAPE_LINE_BREAK=false log::info "serialized array=\n$ENC\n"
     serialized_array_receiver "$ENC"
 
     return 0
@@ -67,7 +67,7 @@ serialized_array_receiver() {
     local arg="$1"
     local -a DEC
     util::series::deserialize --from arg --to DEC
-    log::info "descerialized array=\n${DEC[*]}"
+    LOG_ESCAPE_LINE_BREAK=false log::info "descerialized array=\n${DEC[*]}"
 }
 
 myfunc --all "valueA" -c -d 5 -- -b 65535

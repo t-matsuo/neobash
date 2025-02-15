@@ -8,6 +8,7 @@
 # * Output logs of various types, such as debug, info, notice, error, crit, and stacktrace.
 # * Log message format is plain or json.
 # * Log message is formatted with color and timestamp by default.
+# * Control characters in log message are removed.
 # * Can select output destination of log to stdout/stderr or file.
 # * Catch unexpected SIGINT, SIGTERM, and SIGERR, and output the stacktrace.
 #
@@ -25,6 +26,7 @@
 # * LOG_STACK_TRACE : Switch the output of the stack trace for CRIT, DEBUG, and ERROR logs. default: ``true``
 # * LOG_TIMESTAMP : Switch the output of the timestamp to the all logs. default: ``true``
 # * LOG_TIMESTAMP_FORMAT : Set the timestamp format. please specify the format using printf formatting. default: ``%F-%T%z``
+# * LOG_ESCAPE_LINE_BREAK: switch escaping of line breaks and \n to \\n. default: ``true`` (escape line breaks and \n to \\n)
 #
 # Example: enable debug log and disable stack trace.
 # ```bash
@@ -89,6 +91,9 @@ readonly CORE_LOG_COLOR_WHITE=37
 # add timestamp to log
 : "${LOG_TIMESTAMP:=true}"
 : "${LOG_TIMESTAMP_FORMAT:=%F-%T%z}"
+
+# escape 'line break' and '\n' to '\\n'
+: "${LOG_ESCAPE_LINE_BREAK:=true}"
 
 # switch terminal log
 : "${LOG_TERMINAL:=true}"
@@ -169,6 +174,24 @@ __core::log__() {
     local LOG
     local caller="${FUNCNAME[1]}"
     local caller2
+
+    # \n -> line break
+    MESSAGE="${MESSAGE//\\n/$'\n'}"
+    # escape \ to \\
+    MESSAGE="${MESSAGE//\\/\\\\}"
+    # escape line break to \n
+    if [[ "$LOG_ESCAPE_LINE_BREAK" == "true" ]]; then
+        # escape non printable characters without line break
+        MESSAGE="${MESSAGE//[^[:print:|\n]]/}"
+        # escape line break to \\n
+        MESSAGE="${MESSAGE//$'\n'/\\\\n}"
+    else
+        # escape non printable characters without line break
+        MESSAGE="${MESSAGE//[^[:print:|\n]]/}"
+    fi
+    # escape control characters without line break and tab
+    MESSAGE="${MESSAGE//[]/}"
+
     if [[ "$LOG_TERMINAL" == "true" ]]; then
         if [[ "$LOG_TIMESTAMP" == "true" ]]; then
             printf -v DATE "%($LOG_TIMESTAMP_FORMAT)T"
