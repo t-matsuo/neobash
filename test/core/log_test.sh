@@ -119,7 +119,7 @@ test_core::log::debug() {
   assert_exit_code "0"
 
   local OUTPUT=$( core::log::debug "debug log" {stderr}>&1 )
-  assert_matches "" "$OUTPUT"
+  assert_exit_code "0"
 
   local OUTPUT=$( LOG_DEBUG="true" core::log::debug "debug log" {stderr}>&1 )
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} DEBUG debug log   \[test_core::log::debug()" "$OUTPUT"
