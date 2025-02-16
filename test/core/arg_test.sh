@@ -46,7 +46,7 @@ test_core::arg::add_option_normal() {
     assert_matches "true"  "${CORE_ARG_STORE["ARG_C"]}"
     assert_matches "false" "${CORE_ARG_STORE["ARG_D"]}"
 
-    assert_matches ""      "${CORE_ARG_DEFAULT["ARG_A"]}"
+    assert_empty           "${CORE_ARG_DEFAULT["ARG_A"]}"
     assert_matches "123"   "${CORE_ARG_DEFAULT["ARG_B"]}"
     assert_matches "false" "${CORE_ARG_DEFAULT["ARG_C"]}"
     assert_matches "true"  "${CORE_ARG_DEFAULT["ARG_D"]}"
