@@ -175,19 +175,30 @@ __core::log__() {
     local caller="${FUNCNAME[1]}"
     local caller2
 
-    # \n -> line break
+    # convert to control characters to permit line break and tab escape sequences
+    # \n -> line break control character
     MESSAGE="${MESSAGE//\\n/$'\n'}"
-    # escape \ to \\
+    # \t -> TAB control characterj
+    MESSAGE="${MESSAGE//\\t/$'\t'}"
+
+    # escape \ to \\  (withtou line break and tab)
     MESSAGE="${MESSAGE//\\/\\\\}"
+
+    # convert to escape sequences to avoid matching [:print:]
+    # line break -> \n
+    MESSAGE="${MESSAGE//$'\n'/\\n}"
+    # TAB -> \t
+    MESSAGE="${MESSAGE//$'\t'/\\t}"
+
     # escape line break to \n
     if [[ "$LOG_ESCAPE_LINE_BREAK" == "true" ]]; then
         # escape non printable characters without line break
-        MESSAGE="${MESSAGE//[^[:print:|\n]]/}"
+        MESSAGE="${MESSAGE//[^[:print:]]/}"
         # escape line break to \\n
-        MESSAGE="${MESSAGE//$'\n'/\\\\n}"
+        MESSAGE="${MESSAGE//\\n/\\\\n}"
     else
         # escape non printable characters without line break
-        MESSAGE="${MESSAGE//[^[:print:|\n]]/}"
+        MESSAGE="${MESSAGE//[^[:print:]]/}"
     fi
     # escape control characters without line break and tab
     MESSAGE="${MESSAGE//[]/}"

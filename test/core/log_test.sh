@@ -102,6 +102,24 @@ test_core::log::info_with_escape_sequence() {
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info none printable \\\\c char" "$OUTPUT"
 }
 
+test_core::log::info_with_tab() {
+  local TEXT="tab"$'\t'"char"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO tab"$'\t'"char" "$OUTPUT"
+}
+
+test_core::log::info_with_escaped_tab() {
+  local TEXT="tab\tchar"
+  core::log::info "$TEXT"
+  assert_exit_code "0"
+
+  local OUTPUT=$( core::log::info "$TEXT" )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO tab"$'\t'"char" "$OUTPUT"
+}
+
 test_core::log::info_with_control_character() {
   local TEXT="info control	char"
   core::log::info "$TEXT"
