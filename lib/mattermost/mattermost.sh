@@ -31,7 +31,6 @@ mattermost::post() {
     core::arg::add_option_alias -l "API_URL" -a "-u"
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
     core::arg::add_option -l "VERBOSE" -o "--verbose" -r "false" -t "bool" -s "true" -h "verbose curl log"
-    core::arg::add_option_alias -l "VERBOSE" -a "-v"
     core::arg::parse "$@"
     MESSAGE=$( core::arg::get_value -l "MESSAGE" )
     API_URL=$( core::arg::get_value -l "API_URL" )
