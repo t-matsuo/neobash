@@ -57,8 +57,7 @@ test_core::log::info() {
 }
 
 test_core::log::info_with_escaping_line_break() {
-  local TEXT="info line break
-log"
+  local TEXT="info line break"$'\n'"log"
   core::log::info "$TEXT"
   assert_exit_code "0"
 
@@ -67,14 +66,12 @@ log"
 }
 
 test_core::log::info_without_escaping_line_break() {
-  local TEXT="info line break
-log"
+  local TEXT="info line break"$'\n'"log"
   core::log::info "$TEXT"
   assert_exit_code "0"
 
   local OUTPUT=$( LOG_ESCAPE_LINE_BREAK="false" core::log::info "$TEXT" )
-  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info line break
-log" "$OUTPUT"
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info line break"$'\n'"log" "$OUTPUT"
 }
 
 test_core::log::info_with_escaping_escaped_line_break() {
