@@ -2,6 +2,15 @@
 # Copyright 2025 MATSUO Takatoshi (matsuo.tak@gmail.com)
 # Released under the MIT licence: http://opensource.org/licenses/mit-license
 
+# @file mattermost/mattermost.sh
+# @brief mattermost library
+# @description
+# Useful functions for using mattermost.
+#
+# This library can change its behavior by setting the following environment variables.
+#
+# * MATTERMOST_POST : if false, log message instead of post in mattermost::post(). default: ``true``
+
 nb::require "core/log.sh core/arg.sh"
 nb::command_check "curl"
 
