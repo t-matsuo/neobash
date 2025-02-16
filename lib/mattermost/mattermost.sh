@@ -53,10 +53,10 @@ mattermost::post() {
                         -d '{"text": "'"$ESCAPED_MESSAGE"'"}' "${API_URL}" 2>&1)
         curl_rc=$?
         if [[ $curl_rc -ne 0 ]]; then
-            core::log::error "mattermost post failed: CURL_EXIT_CODE=$curl_rc CURL_LOG=\"$CURL_LOG\" POST_MESSAGE=\"$ESCAPED_MESSAGE\""
+            core::log::error "mattermost post failed rc=$curl_rc POST_MESSAGE=\"$ESCAPED_MESSAGE\" CURL_LOG=\"$CURL_LOG\""
             return 1
         fi
-        core::log::debug "mattermost post successed: CURL_EXIT_CODE=$curl_rc CURL_LOG=\"$CURL_LOG\" POST_MESSAGE=\"$ESCAPED_MESSAGE\""
+        core::log::debug "mattermost post successed: rc=$curl_rc POST_MESSAGE=\"$ESCAPED_MESSAGE\" CURL_LOG=\"$CURL_LOG\""
     else
         core::log::info "mattermost post skipped: POST_MESSAGE=\"$ESCAPED_MESSAGE\""
     fi
