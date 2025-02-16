@@ -38,7 +38,6 @@ mattermost::post() {
     # remove control characters
     ESCAPED_MESSAGE="${ESCAPED_MESSAGE//[]/}"
 
-    #ESCAPED_MESSAGE=$( echo -n -e "$MESSAGE")
     if [[ "${MATTERMOST_POST}" == "true" ]]; then
         CURL_LOG=$( curl -s --fail-with-body -XPOST -H 'Content-Type: application/json' \
                -d '{"text": "'"$ESCAPED_MESSAGE"'"}' "${API_URL}" 2>&1 )
