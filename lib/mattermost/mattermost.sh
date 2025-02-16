@@ -55,7 +55,7 @@ mattermost::ping() {
 }
 
 # @description Post a message to mattermost using incoming webhook.
-# @stdout Show a post message if MATTERMOST_POST=true.
+# @stdout Show a post message if MATTERMOST_POST=false.
 # @stderr Error and debug message.
 # @option --message / -m <vahlue> (string)(required): Message.
 # @option --url / -u <value> (string)(required): Incoming webhook URL.
