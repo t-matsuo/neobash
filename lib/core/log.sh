@@ -273,7 +273,10 @@ core::log::stack_trace() {
     local space=""
 
     if [[ "$LOG_STACK_TRACE" == "true" ]]; then
-        for ((i=2;i<${#FUNCNAME[*]}; i++)); do
+        for ((i=1;i<${#FUNCNAME[*]}; i++)); do
+            if [[ ${BASH_SOURCE[$i]} =~ /lib/core/log.sh$ ]]; then
+                continue
+            fi
             __core::log__ "${LOG_PREFIX_TRACE}" "${space}${FUNCNAME[$i]}() ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}"
             space="  $space"
         done
