@@ -322,7 +322,7 @@ __core::arg::check_value_type__() {
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 core::arg::parse() {
-    local ARGS=("$@")
+    local PARSE_ARGS=("$@")
     local arg
     local num="-1"
     local next_arg
@@ -333,8 +333,8 @@ core::arg::parse() {
     local arg_num=0
     local type
 
-    core::log::debug "ARGS[*]=${ARGS[*]}"
-    for arg in "${ARGS[@]}"; do
+    core::log::debug "PARSE_ARGS[*]=${PARSE_ARGS[*]}"
+    for arg in "${PARSE_ARGS[@]}"; do
         num=$(( $num + 1 ))
         if [[ "$skip_all" == "true" ]]; then
             ARG_OTHERS[$arg_num]="$arg"
@@ -381,7 +381,7 @@ core::arg::parse() {
                 skip=false
                 continue
             fi
-            next_arg="${ARGS[$(( $num + 1 ))]}"
+            next_arg="${PARSE_ARGS[$(( $num + 1 ))]}"
             core::log::debug "next_arg: $next_arg"
             [[ -z "${next_arg:-}" ]] && core::log::error_exit "$arg value is empty"
             __core::arg::is_option__ "$next_arg" && core::log::error_exit "$arg value is empty"
