@@ -75,7 +75,7 @@ curl::ping() {
 }
 
 curl::get() {
-    __curl::exec__ -X GET "$@"
+    __curl::exec__ --get "$@"
 }
 
 curl::patch() {
