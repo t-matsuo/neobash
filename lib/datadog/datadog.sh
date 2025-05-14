@@ -20,7 +20,7 @@ datadog::api::get() {
     arg::add_option -l "API" -o "--api" -t "string" -r "true" -h "API path. ex: /api/v2/xxxxx"
     arg::parse "$@"
 
-    RES=$( curl::get "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" ) || log::error_exit "datadog get api failed"
+    RES=$( curl::get_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" ) || log::error_exit "datadog get api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
@@ -33,7 +33,7 @@ datadog::api::post() {
     arg::add_option -l "DATA" -o "--data" -t "string" -r "true" -h "Post data(JSON)"
     arg::parse "$@"
 
-    RES=$( curl::post "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" ) || log::error_exit "datadog post api failed"
+    RES=$( curl::post_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" ) || log::error_exit "datadog post api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
@@ -47,7 +47,7 @@ datadog::api::patch() {
     arg::parse "$@"
 
     log::debug "API_PATH=${ARGS[API]}"
-    RES=$( curl::patch "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" ) || log::error_exit "datadog patch api failed"
+    RES=$( curl::patch_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" ) || log::error_exit "datadog patch api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
@@ -61,7 +61,7 @@ datadog::api::delete() {
 
     log::debug "API_PATH=${ARGS[API]}"
 
-    RES=$( curl::delete "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" ) || log::error_exit "datadog delete api failed"
+    RES=$( curl::delete_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" ) || log::error_exit "datadog delete api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
@@ -70,8 +70,7 @@ datadog::init() {
     [[ "${DATADOG_API_HOST}" == "" ]] && log::error_exit "DATADOG_API_HOST Env is not set"
     [[ "${DATADOG_API_KEY}" == "" ]] && log::error_exit "DATADOG_API_KEY Env is not set"
     [[ "${DATADOG_APPLICATION_KEY}" == "" ]] && log::error_exit "DATADOG_APPLICATION_KEY Env is not set"
-    DATADOG_API_HEADER=("--header" "Content-Type: application/json"
-                        "--header" "DD-API-KEY: ${DATADOG_API_KEY}"
+    DATADOG_API_HEADER=("--header" "DD-API-KEY: ${DATADOG_API_KEY}"
                         "--header" "DD-APPLICATION-KEY: ${DATADOG_APPLICATION_KEY}")
     return 0
 }
