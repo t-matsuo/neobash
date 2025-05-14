@@ -3,7 +3,7 @@
 nb::require "core/log.sh core/arg.sh"
 nb::command_check "curl"
 
-declare -r __CURL_HEADER_JSON__='Content-Type: application/json'
+readonly __CURL_HEADER_JSON__='Content-Type: application/json'
 
 __CURL_DEFAULT_OPTIONS__=""
 __CURL_COMMON_OPTIONS__="-sSL"
