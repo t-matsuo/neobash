@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Copyright 2025 MATSUO Takatoshi (matsuo.tak@gmail.com)
+# Released under the MIT licence: http://opensource.org/licenses/mit-license
 
 nb::require "core/log.sh core/arg.sh"
 nb::command_check "curl"
