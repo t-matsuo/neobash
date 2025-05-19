@@ -108,15 +108,15 @@ curl::patch_json() {
 }
 
 curl::post_json() {
-    curl::patch --header "${__CURL_HEADER_JSON__}" "$@"
+    curl::post --header "${__CURL_HEADER_JSON__}" "$@"
 }
 
 curl::put_json() {
-    curl::patch --header "${__CURL_HEADER_JSON__}" "$@"
+    curl::put --header "${__CURL_HEADER_JSON__}" "$@"
 }
 
 curl::delete_json() {
-    curl::patch --header "${__CURL_HEADER_JSON__}" "$@"
+    curl::delete --header "${__CURL_HEADER_JSON__}" "$@"
 }
 
 __curl::init__
