@@ -15,7 +15,24 @@ __CURL_DEFAULT_RETRY_DELAY__="3"
 __CURL_FAILCHECK_OPTION__="--fail-with-body"
 
 __curl::init__() {
+    curl::enable_fail
+    __curl::set_default_options__
+}
+
+__curl::set_default_options__() {
+    __CURL_DEFAULT_OPTIONS__="${__CURL_COMMON_OPTIONS__} --connect-timeout $__CURL_DEFAULT_CONNECT_TIMEOUT__ --retry ${__CURL_DEFAULT_RETRY__} --retry-delay $__CURL_DEFAULT_RETRY_DELAY__"
+    core::log::debug "default curl options: $__CURL_COMMON_OPTIONS__"
+}
+
+curl::disable_fail() {
+    log::debug "curl failed option disabled"
+    __CURL_FAILCHECK_OPTION__=""
+}
+
+curl::enable_fail() {
     local CURL_HELP
+    log::debug "curl failed option enabled"
+
     CURL_HELP=$( curl --help all )
     if [[ ${CURL_HELP} =~ " --fail-with-body " ]]; then
         core::log::debug "curl --fail-with-body is available"
@@ -23,12 +40,6 @@ __curl::init__() {
         core::log::debug "curl --fail-with-body is not available. use --fail instead"
         __CURL_FAILCHECK_OPTION__="--fail"
     fi
-    __curl::set_default_options__
-}
-
-__curl::set_default_options__() {
-    __CURL_DEFAULT_OPTIONS__="${__CURL_COMMON_OPTIONS__} ${__CURL_FAILCHECK_OPTION__} --connect-timeout $__CURL_DEFAULT_CONNECT_TIMEOUT__ --retry ${__CURL_DEFAULT_RETRY__} --retry-delay $__CURL_DEFAULT_RETRY_DELAY__"
-    core::log::debug "default curl options: $__CURL_COMMON_OPTIONS__"
 }
 
 curl::set_connect_timeout() {
@@ -60,8 +71,8 @@ curl::set_retry_delay() {
 
 __curl::exec__() {
     local i
-    log::debug "Exec: curl $( for i in ${__CURL_DEFAULT_OPTIONS__}; do echo -n "'$i' "; done ) $( while (( $# > 0 )); do echo -n "'$1' "; shift; done )"
-    curl ${__CURL_DEFAULT_OPTIONS__} "$@"
+    log::debug "Exec: curl $( for i in  ${__CURL_FAILCHECK_OPTION__} ${__CURL_DEFAULT_OPTIONS__}; do echo -n "'$i' "; done ) $( while (( $# > 0 )); do echo -n "'$1' "; shift; done )"
+    curl ${__CURL_FAILCHECK_OPTION__} ${__CURL_DEFAULT_OPTIONS__} "$@"
 }
 
 curl::ping() {
@@ -70,7 +81,7 @@ curl::ping() {
     arg::parse "$@"
     core::log::debug "ping with curl: ${ARGS[URL]}"
 
-    if ! __curl::exec__ -X GET "${ARGS[URL]}" > /dev/null; then
+    if ! __CURL_FAILCHECK_OPTION__="--fail" __curl::exec__ --get "${ARGS[URL]}" > /dev/null; then
         log::error_exit "connecting ${ARGS[URL]} is failed"
     fi
     log::debug "connecting ${ARGS[URL]} is succeeded"
