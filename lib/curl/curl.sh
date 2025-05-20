@@ -60,7 +60,7 @@ curl::set_retry_delay() {
 
 __curl::exec__() {
     local i
-    log::debug "Exec: curl $( for i in ${__CURL_DEFAULT_OPTIONS__}; do echo -n "\"$i\" "; done ) $( while (( $# > 0 )); do echo -n "\"$1\" "; shift; done )"
+    log::debug "Exec: curl $( for i in ${__CURL_DEFAULT_OPTIONS__}; do echo -n "'$i' "; done ) $( while (( $# > 0 )); do echo -n "'$1' "; shift; done )"
     curl ${__CURL_DEFAULT_OPTIONS__} "$@"
 }
 
