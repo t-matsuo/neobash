@@ -12,6 +12,7 @@
 # * MATTERMOST_POST : if false, log message instead of post in mattermost::post(). default: ``true``
 
 nb::require "core/log.sh core/arg.sh"
+nb::import "curl/curl.sh"
 nb::command_check "curl"
 
 MATTERMOST_POST="true"
@@ -49,7 +50,8 @@ mattermost::ping() {
     URL="${HOST}/${PING_PATH}"
     core::log::debug "Mattermost ping URL: ${URL}"
 
-    CURL_LOG=$( curl $CURL_OPTIONS -s --fail-with-body -XGET "${URL}" 2>&1)
+    curl::enable_fail
+    CURL_LOG=$( curl::get $CURL_OPTIONS -s "${URL}" 2>&1)
     curl_rc=$?
     if [[ $curl_rc -ne 0 ]]; then
         core::log::error "mattermost ping failed rc=$curl_rc CURL_LOG=\"$CURL_LOG\""
@@ -103,8 +105,9 @@ mattermost::post() {
     # remove control characters
     ESCAPED_MESSAGE="${ESCAPED_MESSAGE//[]/}"
 
+    curl::enable_fail
     if [[ "${MATTERMOST_POST}" == "true" ]]; then
-        CURL_LOG=$( curl $CURL_OPTIONS -s --fail-with-body -XPOST -H 'Content-Type: application/json' \
+        CURL_LOG=$( curl::post_json $CURL_OPTIONS -s \
                         -d '{"text": "'"$ESCAPED_MESSAGE"'"}' "${API_URL}" 2>&1)
         curl_rc=$?
         if [[ $curl_rc -ne 0 ]]; then
