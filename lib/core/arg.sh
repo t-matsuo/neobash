@@ -31,6 +31,7 @@
 # @description Initialize global variables for script.
 alias core::arg::init_global='
     CORE_ARG_LABEL=""
+    CORE_ARG_HELP_PREFIX=""
     declare -A CORE_ARG_OPTION_LABEL
     declare -A CORE_ARG_OPTION_SHORT
     declare -A CORE_ARG_OPTION_LONG
@@ -47,6 +48,7 @@ alias core::arg::init_global='
 # @description Initialize local variables for function.
 alias core::arg::init_local='
     local CORE_ARG_LABEL=""
+    local CORE_ARG_HELP_PREFIX=""
     local -A CORE_ARG_OPTION_LABEL
     local -A CORE_ARG_OPTION_SHORT
     local -A CORE_ARG_OPTION_LONG
@@ -364,7 +366,7 @@ core::arg::parse() {
             fi
         else
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-                core::arg::show_usage ""
+                core::arg::show_usage
                 exit 0
             fi
         fi
@@ -627,16 +629,15 @@ core::arg::get_all_option() {
 # * This function is designed to embed the usage of options in the script's help message.
 # @stdout Show usage message for option.
 # @stderr Error and debug message.
-# @arg $1 (string) (optional): Line prefix. This prefix is intended to be used when you want to decrease the indentation at the beginning of the usage of options. default: ``""``
+# @arg $1 (string) (optional): Line prefix. This prefix is intended to be used when you want to decrease the indentation at the beginning of the usage of options. You can also specify core::arg::set_help_prefix(). default: ``""``
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 core::arg::show_usage() {
-    local PREFIX=""
     local label
     local required
     local value
 
-    [[ -v 1 ]] && PREFIX="$1"
+    [[ -v 1 ]] && CORE_ARG_HELP_PREFIX=$1
 
     for label in $CORE_ARG_LABEL; do
         value=""
@@ -648,7 +649,7 @@ core::arg::show_usage() {
         [[ "${CORE_ARG_STORE["$label"]}" == "none" ]] && value=" VALUE"
 
         if [[ -n "${CORE_ARG_OPTION_SHORT["$label"]:-}" ]]; then
-            echo -n "${PREFIX}* ${CORE_ARG_OPTION_SHORT["$label"]}"
+            echo -n "${CORE_ARG_HELP_PREFIX}* ${CORE_ARG_OPTION_SHORT["$label"]}"
             if [[ -n "${CORE_ARG_OPTION_LONG["$label"]:-}" ]]; then
                 echo -n ", ${CORE_ARG_OPTION_LONG["$label"]}"
                 echo -e "${value}\t${required}"
@@ -656,17 +657,31 @@ core::arg::show_usage() {
                 echo -e "${value}\t\t\t${required}"
             fi
         else
-            echo -n "${PREFIX}* ${CORE_ARG_OPTION_LONG["$label"]}"
+            echo -n "${CORE_ARG_HELP_PREFIX}* ${CORE_ARG_OPTION_LONG["$label"]}"
             echo -e "${value}\t\t${required}"
         fi
-        echo "$PREFIX  * ${CORE_ARG_HELP[$label]}"
+        echo "$CORE_ARG_HELP_PREFIX  * ${CORE_ARG_HELP[$label]}"
         if [[ "${CORE_ARG_STORE["$label"]}" == "none" ]]; then
-            echo "$PREFIX  * VALUE: ${CORE_ARG_TYPE[$label]}"
+            echo "$CORE_ARG_HELP_PREFIX  * VALUE: ${CORE_ARG_TYPE[$label]}"
         fi
         if [[ "${CORE_ARG_STORE["$label"]}" == "none" && "${CORE_ARG_REQUIRED["$label"]}" == "false" ]]; then
-            echo "$PREFIX  * DEFAULT: \"${CORE_ARG_DEFAULT[$label]}\""
+            echo "$CORE_ARG_HELP_PREFIX  * DEFAULT: \"${CORE_ARG_DEFAULT[$label]}\""
         fi
     done
+}
+
+# @description Set help help text prefix.
+# * Alias is defined as ``arg::set_help_prefix``
+# @stdout None
+# @stderr None
+# @arg $1 (string): prefix string
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
+core::arg::set_help_prefix() {
+    [[ -v 1 ]] && CORE_ARG_HELP_PREFIX="$1"
+    [[ ! -v 1 ]] && log::error "help prefix is empty" && return 1
+    log::debug "help prefix is \"$CORE_ARG_HELP_PREFIX\""
+    return 0
 }
 
 # define aliases
@@ -681,3 +696,4 @@ alias arg::del_value='core::arg::del_value'
 alias arg::get_all_value='core::arg::get_all_value'
 alias arg::get_all_option='core::arg::get_all_option'
 alias arg::show_usage='core::arg::show_usage'
+alias arg::set_help_prefix='core::arg::set_help_prefix'
