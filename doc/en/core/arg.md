@@ -38,6 +38,7 @@ args::init_local
 * [core::arg::get_all_value](#corearggetallvalue)
 * [core::arg::get_all_option](#corearggetalloption)
 * [core::arg::show_usage](#coreargshowusage)
+* [core::arg::set_help_prefix](#coreargsethelpprefix)
 
 ### core::arg::add_option
 
@@ -277,7 +278,7 @@ Show option usages for your script help text.
 
 #### Arguments
 
-* **$1** ((string)): (optional): Line prefix. This prefix is intended to be used when you want to decrease the indentation at the beginning of the usage of options. default: ``""``
+* **$1** ((string)): (optional): Line prefix. This prefix is intended to be used when you want to decrease the indentation at the beginning of the usage of options. You can also specify core::arg::set_help_prefix(). default: ``""``
 
 #### Exit codes
 
@@ -291,4 +292,26 @@ Show option usages for your script help text.
 #### Output on stderr
 
 * Error and debug message.
+
+### core::arg::set_help_prefix
+
+Set help help text prefix.
+* Alias is defined as ``arg::set_help_prefix``
+
+#### Arguments
+
+* **$1** ((string):): prefix string
+
+#### Exit codes
+
+* **0**: If successfull.
+* **1**: If failed.
+
+#### Output on stdout
+
+* None
+
+#### Output on stderr
+
+* None
 
