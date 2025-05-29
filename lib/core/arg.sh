@@ -353,7 +353,7 @@ core::arg::parse() {
         fi
 
         # fixed option
-        if [[ "${FUNCNAME[1]}" == "main" ]]; then
+        if [[ "${FUNCNAME[1]}" == "main" ]] && [[ ! -v FUNCNAME[2] ]] ; then
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
                 if [[ "$( type -t show_help )" == "function" ]]; then show_help; else core::arg::show_usage; fi
                 exit 0
