@@ -168,7 +168,7 @@ __core::log::stderr__() {
 # @internal
 # @description wrapper for terminal output
 __core::log__() {
-    local DATE
+    local DATE=""
     local LEVEL=$1
     local MESSAGE=$2
     local LOG
