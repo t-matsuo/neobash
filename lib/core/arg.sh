@@ -268,8 +268,10 @@ core::arg::add_option_alias() {
 # @exitcode 0 It's option.
 # @exitcode 1 IT's not option.
 __core::arg::is_option__() {
-    local OPTION="$1"
-    [[ -z "${OPTION:-}" ]] && core::log::error_exit "args is empty"
+    local OPTION
+
+    [[ $# -eq 0 ]] && core::log::error_exit "args is empty"
+    OPTION="$1"
     [[ "$OPTION" =~ " " ]] && return 1
     [[ ! "$OPTION" =~ ^-{1,2}[a-zA-Z]$ && ! "$OPTION" =~ ^--[a-zA-Z] ]] && return 1
     return 0
@@ -287,7 +289,7 @@ __core::arg::check_value_type__() {
     local TYPE="$1"
     local VALUE="$2"
     [[ -z "${TYPE:-}" ]] && core::log::error_exit "TYPE is empty"
-    [[ -z "${VALUE:-}" ]] && core::log::error_exit "VALUE is empty"
+    [[ "${TYPE:-}" != "string" ]] && [[ -z "${VALUE:-}" ]] && core::log::error_exit "VALUE is empty"
     [[ "$TYPE" != "string" && "$TYPE" != "int" && "$TYPE" != "bool" ]] \
         && core::log::error_exit "type \"$TYPE\" is invalid"
 
@@ -383,8 +385,8 @@ core::arg::parse() {
             fi
             next_arg="${PARSE_ARGS[$(( $num + 1 ))]}"
             core::log::debug "next_arg: $next_arg"
-            [[ -z "${next_arg:-}" ]] && core::log::error_exit "$arg value is empty"
             __core::arg::is_option__ "$next_arg" && core::log::error_exit "$arg value is empty"
+            [[ "$next_arg" == "--" ]] && core::log::error_exit "$arg value is empty"
             [[ -n ${CORE_ARG_VALUE["$label"]:-} ]] && core::log::error_exit "$arg value is already set"
 
             # check value type

@@ -22,6 +22,7 @@ myfunc() {
     arg::add_option -l "ARG_B" -o "-b" -t "int" -r "false" -s "none" -h "-b option help"
     arg::add_option -l "ARG_C" -o "-c" -r "false" -s "true"
     arg::add_option -l "ARG_D" -o "-d" -r "false" -t "int" -d 3
+    arg::add_option -l "ARG_E" -o "-e" -t "string" -r "false" -d ""
     arg::parse "$@"
 
     log::info "Options:\n$( arg::get_all_option )"
@@ -70,5 +71,5 @@ serialized_array_receiver() {
     LOG_ESCAPE_LINE_BREAK=false log::info "descerialized array=\n${DEC[*]}"
 }
 
-myfunc --all "valueA" -c -d 5 -- -b 65535
+myfunc --all "valueA" -c  -d 5 -e "" -- -b 65535
 log::notice "End of myfunc"

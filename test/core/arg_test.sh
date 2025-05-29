@@ -29,6 +29,7 @@ test_core::arg::add_option_normal() {
     core::arg::add_option -l "ARG_D" -o "-d" -t "bool" -r "false" -s "false"
     core::arg::add_option -l "ARG_E" -o "-e" -t "int" -r "false" -d "567"
     core::arg::add_option -l "ARG_F" -o "-f" -t "string" -r "false" -d "eeee"
+    core::arg::add_option -l "ARG_G" -o "-g" -t "string" -r "false" -d ""
 
     assert_matches "ARG_A"  "${CORE_ARG_OPTION_LABEL["-a"]}"
     assert_matches "ARG_B"  "${CORE_ARG_OPTION_LABEL["--argb"]}"
@@ -59,6 +60,7 @@ test_core::arg::add_option_normal() {
     assert_matches "true"  "${ARGS["ARG_D"]}"
     assert_matches "567"   "${ARGS["ARG_E"]}"
     assert_matches "eeee"  "${ARGS["ARG_F"]}"
+    assert_matches "x"     "x${ARGS["ARG_G"]}"  # check empty string arg
 
     assert_same    "aaaa"  "$(core::arg::get_value -l 'ARG_A')"
     assert_same    "3"     "$(core::arg::get_value -l 'ARG_B')"
@@ -106,5 +108,5 @@ test_core::arg::add_option_normal() {
     assert_exit_code 1 $(__core::arg::is_option__ "hoge")
   }
 
-  core::arg::add_option_normal_func -a "aaaa" --argb 3 -c -- $TMP_ARG
+  core::arg::add_option_normal_func -a "aaaa" --argb 3 -c -g "" -- $TMP_ARG
 }
