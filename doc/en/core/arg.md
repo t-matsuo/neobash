@@ -39,6 +39,7 @@ args::init_local
 * [core::arg::get_all_option](#corearggetalloption)
 * [core::arg::show_usage](#coreargshowusage)
 * [core::arg::set_help_prefix](#coreargsethelpprefix)
+* [core::arg::add_help_header](#coreargaddhelpheader)
 
 ### core::arg::add_option
 
@@ -295,12 +296,34 @@ Show option usages for your script help text.
 
 ### core::arg::set_help_prefix
 
-Set help help text prefix.
+Set option help text prefix.
 * Alias is defined as ``arg::set_help_prefix``
 
 #### Arguments
 
 * **$1** ((string):): prefix string
+
+#### Exit codes
+
+* **0**: If successfull.
+* **1**: If failed.
+
+#### Output on stdout
+
+* None
+
+#### Output on stderr
+
+* None
+
+### core::arg::add_help_header
+
+Add help header
+* Alias is defined as ``arg::add_help_prefix``
+
+#### Arguments
+
+* **$1** ((string):): header string
 
 #### Exit codes
 
