@@ -48,6 +48,7 @@ alias core::arg::init_global='
 # @description Initialize local variables for function.
 alias core::arg::init_local='
     local CORE_ARG_LABEL=""
+    local CORE_ARG_HELP_HEADER=""
     local CORE_ARG_HELP_PREFIX=""
     local -A CORE_ARG_OPTION_LABEL
     local -A CORE_ARG_OPTION_SHORT
@@ -366,6 +367,7 @@ core::arg::parse() {
             fi
         else
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+                echo "$CORE_ARG_HELP_HEADER"
                 core::arg::show_usage
                 exit 0
             fi
@@ -670,7 +672,7 @@ core::arg::show_usage() {
     done
 }
 
-# @description Set help help text prefix.
+# @description Set option help text prefix.
 # * Alias is defined as ``arg::set_help_prefix``
 # @stdout None
 # @stderr None
@@ -681,6 +683,20 @@ core::arg::set_help_prefix() {
     [[ $# -eq 0 ]] && log::error "help prefix is empty" && return 1
     CORE_ARG_HELP_PREFIX="$1"
     log::debug "help prefix is \"$CORE_ARG_HELP_PREFIX\""
+    return 0
+}
+
+# @description Add help header
+# * Alias is defined as ``arg::add_help_prefix``
+# @stdout None
+# @stderr None
+# @arg $1 (string): header string
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
+core::arg::add_help_header() {
+    [[ $# -eq 0 ]] && log::error "help header is empty" && return 1
+    CORE_ARG_HELP_HEADER+="$(echo -e $1)"
+    log::debug "help header \"$CORE_ARG_HELP_HEADER\""
     return 0
 }
 
@@ -697,3 +713,4 @@ alias arg::get_all_value='core::arg::get_all_value'
 alias arg::get_all_option='core::arg::get_all_option'
 alias arg::show_usage='core::arg::show_usage'
 alias arg::set_help_prefix='core::arg::set_help_prefix'
+alias arg::add_help_header='core::arg::add_help_header'
