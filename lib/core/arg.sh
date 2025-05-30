@@ -678,8 +678,8 @@ core::arg::show_usage() {
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 core::arg::set_help_prefix() {
-    [[ -v 1 ]] && CORE_ARG_HELP_PREFIX="$1"
-    [[ ! -v 1 ]] && log::error "help prefix is empty" && return 1
+    [[ $# -eq 0 ]] && log::error "help prefix is empty" && return 1
+    CORE_ARG_HELP_PREFIX="$1"
     log::debug "help prefix is \"$CORE_ARG_HELP_PREFIX\""
     return 0
 }
