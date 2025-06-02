@@ -367,7 +367,7 @@ core::arg::parse() {
             fi
         else
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-                echo "$CORE_ARG_HELP_HEADER"
+                echo -e "$CORE_ARG_HELP_HEADER"
                 core::arg::show_usage
                 exit 0
             fi
@@ -695,7 +695,7 @@ core::arg::set_help_prefix() {
 # @exitcode 1 If failed.
 core::arg::add_help_header() {
     [[ $# -eq 0 ]] && log::error "help header is empty" && return 1
-    CORE_ARG_HELP_HEADER+="$(echo -e $1)"
+    CORE_ARG_HELP_HEADER+="$1"
     log::debug "help header \"$CORE_ARG_HELP_HEADER\""
     return 0
 }
