@@ -171,9 +171,12 @@ __core::log__() {
     local DATE=""
     local LEVEL=$1
     local MESSAGE=$2
+    local JSON=""
     local LOG
     local caller="${FUNCNAME[1]}"
     local caller2
+
+    [[ $# -ge 3 ]] && JSON="$3"
 
     # convert to control characters to permit line break and tab escape sequences
     # \n -> line break control character
@@ -216,7 +219,7 @@ __core::log__() {
             LEVEL=${LEVEL//\"/\\\"}
             DATE=${DATE//\"/\\\"}
             MESSAGE=${MESSAGE//\"/\\\"}
-            LOG="{\"level\": \"${LEVEL}\", \"timestamp\": \"${DATE}\", \"message\": \"${MESSAGE}\"}"
+            LOG="{\"level\": \"${LEVEL}\", \"timestamp\": \"${DATE}\", \"message\": \"${MESSAGE}\"$JSON}"
         fi
         # output error and debug log to stderr
         case "$caller" in
@@ -265,21 +268,50 @@ __core::log__() {
 }
 
 # @description Logger for stack trace.
-# @noargs
+# @arg $1 log level for json
+# @arg $2 stack trace message for json
 # @exitcode 0
 core::log::stack_trace() {
+    local LEVEL=""
+    local MESSAGE=""
     local caller="${FUNCNAME[1]}"
     local i
     local space=""
+    local LOG_JSON_STAcK_TRACE=",\"stack_trace\": ["
+    local IS_JSON_FIRST_STACK=true
+    local TRACE_FILE_NAME=""
+    local TRACE_LINE_NO=""
+    local TRACE_FUNC_NAME=""
+
+    if [[ "$LOG_FORMAT" == "json" ]]; then
+        [[ $# -lt 2 ]] && echo "Oops: core::log::stack_trace: no arg1 or arg2" >&$stderr && exit 1
+        LEVEL="$1"
+        MESSAGE="$2"
+    fi
 
     if [[ "$LOG_STACK_TRACE" == "true" ]]; then
         for ((i=1;i<${#FUNCNAME[*]}; i++)); do
             if [[ ${BASH_SOURCE[$i]} =~ /lib/core/log.sh$ ]]; then
                 continue
             fi
-            __core::log__ "${LOG_PREFIX_TRACE}" "${space}${FUNCNAME[$i]}() ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}"
-            space="  $space"
+            if [[ "$LOG_FORMAT" == "plain" ]]; then
+                __core::log__ "${LOG_PREFIX_TRACE}" "${space}${FUNCNAME[$i]}() ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}"
+                space="  $space"
+            fi
+            if [[ "$LOG_FORMAT" == "json" ]]; then
+                [[ "$IS_JSON_FIRST_STACK" == "false" ]] && LOG_JSON_STAcK_TRACE="$LOG_JSON_STAcK_TRACE,"
+                [[ "$IS_JSON_FIRST_STACK" == "true" ]]  && IS_JSON_FIRST_STACK=false
+                # escape double quote
+                TRACE_FILE_NAME="${BASH_SOURCE[$i]}" && TRACE_FILE_NAME="${TRACE_FILE_NAME//\\n/\\\\n}"
+                TRACE_LINE_NO="${BASH_LINENO[$i-1]}" && TRACE_LINE_NO="${TRACE_LINE_NO//\\n/\\\\n}"
+                TRACE_FUNC_NAME="${FUNCNAME[$i]}"    && TRACE_FUNC_NAME="${TRACE_FUNC_NAME//\\n/\\\\n}"
+                LOG_JSON_STAcK_TRACE="${LOG_JSON_STAcK_TRACE}{\"file\": \"${TRACE_FILE_NAME}\", \"line\": \"${TRACE_LINE_NO}\", \"function\": \"${TRACE_FUNC_NAME}\"}"
+            fi
         done
+        if [[ "$LOG_FORMAT" == "json" ]]; then
+            LOG_JSON_STAcK_TRACE="$LOG_JSON_STAcK_TRACE]"
+            __core::log__ "${LEVEL}" "$MESSAGE" "$LOG_JSON_STAcK_TRACE"
+        fi
     fi
     return 0
 }
@@ -291,8 +323,8 @@ core::log::stack_trace() {
 # @stderr output critical log message and stack trace.
 # @exitcode 1
 core::log::crit() {
-    __core::log__ "${LOG_PREFIX_CRIT}" "${1:-}"
-    core::log::stack_trace
+    [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_CRIT}" "${1:-}"
+    core::log::stack_trace "${LOG_PREFIX_CRIT}" "${1:-}"
     exit 1
 }
 
@@ -303,8 +335,8 @@ core::log::crit() {
 # @stderr output error log message and stack trace.
 # @exitcode 0
 core::log::error() {
-    __core::log__ "${LOG_PREFIX_ERROR}" "${1:-}"
-    core::log::stack_trace
+    [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_ERROR}" "${1:-}"
+    core::log::stack_trace "${LOG_PREFIX_ERROR}" "${1:-}"
     return 0
 }
 
@@ -377,8 +409,9 @@ core::log::debug() {
                 fi
             done
         fi
-         __core::log__ "${LOG_PREFIX_DEBUG}" "$1   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
-         [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace
+         [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$SHOW_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && \
+            __core::log__ "${LOG_PREFIX_DEBUG}" "$1   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
+         [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace "${LOG_PREFIX_DEBUG}" "$1"
          return 0
     fi
 
@@ -386,8 +419,9 @@ core::log::debug() {
     if [[ -n "${LOG_DEBUG_TARGET_FUNC:-}" ]]; then
         for target in ${LOG_DEBUG_TARGET_FUNC}; do
             if [[ ${FUNCNAME[1]} =~ $target ]]; then
-                __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
-                [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace
+                [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$SHOW_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && \
+                    __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
+                [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace "${LOG_PREFIX_DEBUG}" "$*"
             fi
         done
     fi
@@ -396,8 +430,9 @@ core::log::debug() {
     if [[ -n "${LOG_DEBUG_TARGET_FILE:-}" ]]; then
         for target in ${LOG_DEBUG_TARGET_FILE}; do
             if [[ ${BASH_SOURCE[1]} =~ $target ]]; then
-                __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
-                [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace
+                [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$SHOW_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && \
+                    __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
+                [[ "$SHOW_STACK_TRACE" == "true" ]] && core::log::stack_trace "${LOG_PREFIX_DEBUG}" "$*"
             fi
         done
     fi
