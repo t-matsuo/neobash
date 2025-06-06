@@ -31,6 +31,7 @@
 # @description Initialize global variables for script.
 alias core::arg::init_global='
     CORE_ARG_LABEL=""
+    CORE_ARG_HELP_HEADER=""
     CORE_ARG_HELP_PREFIX=""
     declare -A CORE_ARG_OPTION_LABEL
     declare -A CORE_ARG_OPTION_SHORT
@@ -358,6 +359,7 @@ core::arg::parse() {
         # fixed option
         if [[ "${FUNCNAME[1]}" == "main" ]] && [[ ! -v FUNCNAME[2] ]] ; then
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+                echo -e "$CORE_ARG_HELP_HEADER"
                 if [[ "$( type -t show_help )" == "function" ]]; then show_help; else core::arg::show_usage; fi
                 exit 0
             fi
