@@ -24,7 +24,7 @@ test_core::arg::add_option_normal() {
 
     core::arg::add_option -l "ARG_A" -o "-a" -t "string" -r "true"
     core::arg::add_option -l "ARG_B" -o "--argb" -t "int" -r "false" -d "123" -h "-b option help"
-    core::arg::add_option_alias -l "ARG_B" -a "-b"
+    core::arg::add_option_alias -l "ARG_B" -o "-b"
     core::arg::add_option -l "ARG_C" -o "-c" -t "bool" -r "false" -h "-c option help" -s "true"
     core::arg::add_option -l "ARG_D" -o "-d" -t "bool" -r "false" -s "false"
     core::arg::add_option -l "ARG_E" -o "-e" -t "int" -r "false" -d "567"

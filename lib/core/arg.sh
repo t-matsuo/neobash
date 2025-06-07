@@ -218,7 +218,8 @@ core::arg::add_option() {
 # * ``-h `` ``--help`` ``-v`` ``--version`` are defined by default so you cannot use them as option.
 # * You can define only one alias per label.
 # @option -l <value> (string)(required): Label defined by ``arg::add_option``
-# @option -a <value> (string)(optional): Option alias name such as ``--m`` for ``--myarg``.
+# @option -a <value> (string)(required): Option alias name such as ``--m`` for ``--myarg``. (deplcated) use -o option
+# @option -o <value> (string)(required): Option alias name such as ``--m`` for ``--myarg``.
 # @stdout None.
 # @stderr Error and debug message.
 # @exitcode 0 If successfull.
@@ -229,13 +230,16 @@ core::arg::add_option_alias() {
     local OPTIND
     local OPTARG
     local opt
-    local options=":l:a:"
+    local options=":l:a:o:"
     while getopts "$options" opt; do
         case "$opt" in
         l)
             LABEL="$OPTARG"
             ;;
         a)
+            ALIAS="$OPTARG"
+            ;;
+        o)
             ALIAS="$OPTARG"
             ;;
         \?)
@@ -246,7 +250,7 @@ core::arg::add_option_alias() {
         esac
     done
     [[ -z "${LABEL:-}" ]] && core::log::error_exit "label(-l) is required"
-    [[ -z "${ALIAS:-}" ]] && core::log::error_exit "$LABEL alias(-a) is required"
+    [[ -z "${ALIAS:-}" ]] && core::log::error_exit "$LABEL alias(-o) is required"
     [[ ! "$ALIAS" =~ ^-{1,2}[a-zA-Z]$ && ! "$ALIAS" =~ ^--[a-zA-Z] ]] \
         && core::log::error_exit "\"$ALIAS\" must not start with \"-\" or \"--\", and \"-\" require 1 character"
 
