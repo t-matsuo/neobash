@@ -156,9 +156,9 @@ __core::log::stderr__() {
     local COLOR="$1"
     local LOG="$2"
     if [[ "$LOG_COLOR_STDERR" == "true" ]]; then
-        __core::log::color_terminal__ "$COLOR" "$LOG" >&$stderr
+        __core::log::color_terminal__ "$COLOR" "$LOG" >&$core_log_saved_stderr
     else
-        echo -e "$LOG" >&$stderr
+        echo -e "$LOG" >&$core_log_saved_stderr
     fi
     # output to file
     echo -e "$LOG" >> "$LOG_FILE"
@@ -284,7 +284,7 @@ core::log::stack_trace() {
     local TRACE_FUNC_NAME=""
 
     if [[ "$LOG_FORMAT" == "json" ]]; then
-        [[ $# -lt 2 ]] && echo "Oops: core::log::stack_trace: no arg1 or arg2" >&$stderr && exit 1
+        [[ $# -lt 2 ]] && echo "Oops: core::log::stack_trace: no arg1 or arg2" >&$core_log_saved_stderr && exit 1
         LEVEL="$1"
         MESSAGE="$2"
     fi
@@ -502,6 +502,6 @@ alias log::debug='core::log::debug'
 __core::log::switch_terminal_color__
 
 # save stderr
-exec {stderr}>&2
+exec {core_log_saved_stderr}>&2
 # redirect stderr to append header and color settings
 exec 2> >(__core::log::read_stderr__)
