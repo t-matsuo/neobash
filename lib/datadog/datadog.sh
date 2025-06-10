@@ -17,12 +17,13 @@ datadog::api::ping() {
 
 datadog::api::get() {
     local RES=""
+    local DATA=""
 
     arg::init_local
     arg::add_option -l "API" -o "--api" -t "string" -r "true" -h "API path. ex: /api/v2/xxxxx"
     arg::parse "$@"
 
-    RES=$( curl::get_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" ) || log::error_exit "datadog get api failed"
+    RES=$( curl::get_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" "${ARG_OTHERS[@]}" ) || log::error_exit "datadog get api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
@@ -35,7 +36,7 @@ datadog::api::post() {
     arg::add_option -l "DATA" -o "--data" -t "string" -r "true" -h "Post data(JSON)"
     arg::parse "$@"
 
-    RES=$( curl::post_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" ) || log::error_exit "datadog post api failed"
+    RES=$( curl::post_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" "${ARG_OTHERS[@]}" ) || log::error_exit "datadog post api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
@@ -49,7 +50,7 @@ datadog::api::patch() {
     arg::parse "$@"
 
     log::debug "API_PATH=${ARGS[API]}"
-    RES=$( curl::patch_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" ) || log::error_exit "datadog patch api failed"
+    RES=$( curl::patch_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" --data-raw "${ARGS[DATA]}" "${ARG_OTHERS[@]}" ) || log::error_exit "datadog patch api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
@@ -63,7 +64,7 @@ datadog::api::delete() {
 
     log::debug "API_PATH=${ARGS[API]}"
 
-    RES=$( curl::delete_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" ) || log::error_exit "datadog delete api failed"
+    RES=$( curl::delete_json "${DATADOG_API_HEADER[@]}" "${DATADOG_API_HOST}${ARGS[API]}" "${ARG_OTHERS[@]}" ) || log::error_exit "datadog delete api failed"
     log::debug "RESPONSE=$RES"
     echo "$RES"
 }
