@@ -45,19 +45,19 @@ Controlling log prefix.
 * LOG_PREFIX_TRACE : set the log prefix for TRACE log. default: ``TRACE``
 
 Controlling debug log filter.
-* LOG_DEBUG_TARGET_FUNC : select the debug log by function name. default: ``''``
-* LOG_DEBUG_TARGET_FILE : select the debug log by file name. default: ``''``
-* LOG_DEBUG_UNTARGET_FUNC : drop the debug log by function name. default: ``''``
-* LOG_DEBUG_UNTARGET_FILE : drop the debug log by file name. default: ``''``
+* LOG_DEBUG_FUNC : select the debug log by function name. default: ``''``
+* LOG_DEBUG_FILE : select the debug log by file name. default: ``''``
+* LOG_DEBUG_NO_FUNC : drop the debug log by function name. default: ``''``
+* LOG_DEBUG_NO_FILE : drop the debug log by file name. default: ``''``
 
 Example: enable debug log for ``mylib::get_xxx`` function only.
 ```bash
-LOG_DEBUG_TARGET_FUNC="mylib::get_xxx" ./myscript.sh
+LOG_DEBUG_FUNC="mylib::get_xxx mylib:set_xxx" ./myscript.sh
 ```
 
 Example: enable debug log for ``mylib/myutil.sh`` file only.
 ```bash
-LOG_DEBUG_TARGET_FILE="mylib/myutil.sh" ./myscript.sh
+LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 ```
 
 ## Index

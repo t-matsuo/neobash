@@ -46,19 +46,19 @@
 # * LOG_PREFIX_TRACE : set the log prefix for TRACE log. default: ``TRACE``
 #
 # Controlling debug log filter.
-# * LOG_DEBUG_TARGET_FUNC : select the debug log by function name. default: ``''``
-# * LOG_DEBUG_TARGET_FILE : select the debug log by file name. default: ``''``
-# * LOG_DEBUG_UNTARGET_FUNC : drop the debug log by function name. default: ``''``
-# * LOG_DEBUG_UNTARGET_FILE : drop the debug log by file name. default: ``''``
+# * LOG_DEBUG_FUNC : select the debug log by function name. default: ``''``
+# * LOG_DEBUG_FILE : select the debug log by file name. default: ``''``
+# * LOG_DEBUG_NO_FUNC : drop the debug log by function name. default: ``''``
+# * LOG_DEBUG_NO_FILE : drop the debug log by file name. default: ``''``
 #
 # Example: enable debug log for ``mylib::get_xxx`` function only.
 # ```bash
-# LOG_DEBUG_TARGET_FUNC="mylib::get_xxx" ./myscript.sh
+# LOG_DEBUG_FUNC="mylib::get_xxx mylib:set_xxx" ./myscript.sh
 # ```
 #
 # Example: enable debug log for ``mylib/myutil.sh`` file only.
 # ```bash
-# LOG_DEBUG_TARGET_FILE="mylib/myutil.sh" ./myscript.sh
+# LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 # ```
 
 #### Logging Parameters ####
@@ -101,10 +101,10 @@ readonly CORE_LOG_COLOR_WHITE=37
 : "${LOG_FILE:=/dev/null}"
 
 # filter for debug
-: "${LOG_DEBUG_TARGET_FUNC:=}"
-: "${LOG_DEBUG_TARGET_FILE:=}"
-: "${LOG_DEBUG_UNTARGET_FUNC:=}"
-: "${LOG_DEBUG_UNTARGET_FILE:=}"
+: "${LOG_DEBUG_FUNC:=}"
+: "${LOG_DEBUG_FILE:=}"
+: "${LOG_DEBUG_NO_FUNC:=}"
+: "${LOG_DEBUG_NO_FILE:=}"
 
 declare -g LOG_COLOR_STDOUT
 declare -g LOG_COLOR_STDERR
@@ -394,16 +394,16 @@ core::log::debug() {
 
     if [[ "$LOG_DEBUG" == "true" ]]; then
         # supress debug log for specified function name
-        if [[ -n "${LOG_DEBUG_UNTARGET_FUNC:-}" ]]; then
-            for target in ${LOG_DEBUG_UNTARGET_FUNC}; do
+        if [[ -n "${LOG_DEBUG_NO_FUNC:-}" ]]; then
+            for target in ${LOG_DEBUG_NO_FUNC}; do
                 if [[ ${FUNCNAME[1]} =~ $target ]]; then
                     return 0
                 fi
             done
         fi
         # supress debug log for specified file or directory name
-        if [[ -n "${LOG_DEBUG_UNTARGET_FILE:-}" ]]; then
-            for target in ${LOG_DEBUG_UNTARGET_FILE}; do
+        if [[ -n "${LOG_DEBUG_NO_FILE:-}" ]]; then
+            for target in ${LOG_DEBUG_NO_FILE}; do
                 if [[ ${BASH_SOURCE[1]} =~ $target ]]; then
                     return 0
                 fi
@@ -416,8 +416,8 @@ core::log::debug() {
     fi
 
     # debug log for specified function name
-    if [[ -n "${LOG_DEBUG_TARGET_FUNC:-}" ]]; then
-        for target in ${LOG_DEBUG_TARGET_FUNC}; do
+    if [[ -n "${LOG_DEBUG_FUNC:-}" ]]; then
+        for target in ${LOG_DEBUG_FUNC}; do
             if [[ ${FUNCNAME[1]} =~ $target ]]; then
                 [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$SHOW_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && \
                     __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
@@ -427,8 +427,8 @@ core::log::debug() {
     fi
 
     # debug log for specified file or directory name
-    if [[ -n "${LOG_DEBUG_TARGET_FILE:-}" ]]; then
-        for target in ${LOG_DEBUG_TARGET_FILE}; do
+    if [[ -n "${LOG_DEBUG_FILE:-}" ]]; then
+        for target in ${LOG_DEBUG_FILE}; do
             if [[ ${BASH_SOURCE[1]} =~ $target ]]; then
                 [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$SHOW_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && \
                     __core::log__ "${LOG_PREFIX_DEBUG}" "$*   [${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
