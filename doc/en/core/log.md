@@ -69,12 +69,17 @@ LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 * [core::log::notice](#corelognotice)
 * [core::log::info](#coreloginfo)
 * [core::log::debug](#corelogdebug)
+* [core::log::enable_err_trap](#corelogenableerrtrap)
+* [core::log::disable_err_trap](#corelogdisableerrtrap)
 
 ### core::log::stack_trace
 
 Logger for stack trace.
 
-_Function has no arguments._
+#### Arguments
+
+* **$1** (log): level for json
+* **$2** (stack): trace message for json
 
 #### Exit codes
 
@@ -188,4 +193,40 @@ Alias is defined as ``log::debug``
 #### Output on stderr
 
 * Debug log.
+
+### core::log::enable_err_trap
+
+Disable error trap
+
+Alias is defined as ``log::disable_err_trap``
+
+#### Options
+
+* none
+
+#### Exit codes
+
+* 0
+
+#### Output on stderr
+
+* none
+
+### core::log::disable_err_trap
+
+Enable error trap
+
+Alias is defined as ``log::enable_err_trap``
+
+#### Options
+
+* none
+
+#### Exit codes
+
+* 0
+
+#### Output on stderr
+
+* none
 

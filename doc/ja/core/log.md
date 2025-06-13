@@ -43,19 +43,19 @@ LOG_DEBUG=true LOG_STACK_TRACE=false ./myscript.sh
 * LOG_PREFIX_TRACE :  TRACE ログのプレフィックスを設定します。default: ``TRACE``
 
 デバッグログのフィルタリング用。
-* LOG_DEBUG_TARGET_FUNC : 指定した関数名のログだけ出力します。default: ``''``
-* LOG_DEBUG_TARGET_FILE : 指定したファイル名のログだけ出力します。default: ``''``
-* LOG_DEBUG_UNTARGET_FUNC : 指定した関数名のログだけ出力を抑止します。default: ``''``
-* LOG_DEBUG_UNTARGET_FILE : 指定したファイル名のログだけ出力を抑止します。default: ``''``
+* LOG_DEBUG_FUNC : 指定した関数名のログだけ出力します。default: ``''``
+* LOG_DEBUG_FILE : 指定したファイル名のログだけ出力します。default: ``''``
+* LOG_DEBUG_NO_FUNC : 指定した関数名のログだけ出力を抑止します。default: ``''``
+* LOG_DEBUG_NO_FILE : 指定したファイル名のログだけ出力を抑止します。default: ``''``
 
 Example: ``mylib::get_xxx`` という名前の関数内のデバッグログだけ出力します。
 ```bash
-LOG_DEBUG_TARGET_FUNC="mylib::get_xxx" ./myscript.sh
+LOG_DEBUG_FUNC="mylib::get_xxx" ./myscript.sh
 ```
 
 Example: ``mylib/myutil.sh`` という名前のファイル内のデバッグログだけ出力します。
 ```bash
-LOG_DEBUG_TARGET_FILE="mylib/myutil.sh" ./myscript.sh
+LOG_DEBUG_FILE="mylib/myutil.sh mylib/string.sh" ./myscript.sh
 ```
 
 ## 関数一覧
