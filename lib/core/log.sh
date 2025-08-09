@@ -62,9 +62,9 @@
 # ```
 
 #### Logging Parameters ####
-# color palette
 readonly CORE_LOG_COLOR_ESC="\x1B["
 readonly CORE_LOG_COLOR_DEFAULT=0
+# font color palette
 readonly CORE_LOG_COLOR_BLACK=30
 readonly CORE_LOG_COLOR_RED=31
 readonly CORE_LOG_COLOR_GREEN=32
@@ -73,6 +73,21 @@ readonly CORE_LOG_COLOR_BLUE=34
 readonly CORE_LOG_COLOR_MAGENTA=35
 readonly CORE_LOG_COLOR_CYAN=36
 readonly CORE_LOG_COLOR_WHITE=37
+# back color palette
+readonly CORE_LOG_BCOLOR_BLACK=40
+readonly CORE_LOG_BCOLOR_RED=41
+readonly CORE_LOG_BCOLOR_GREEN=42
+readonly CORE_LOG_BCOLOR_YELLOW=43
+readonly CORE_LOG_BCOLOR_BLUE=44
+readonly CORE_LOG_BCOLOR_MAGENTA=45
+readonly CORE_LOG_BCOLOR_CYAN=46
+readonly CORE_LOG_BCOLOR_WHITE=47
+# other decoration
+readonly CORE_LOG_DECO_UNDERLINE=4
+readonly CORE_LOG_DECO_SLOW_BLINK=5
+readonly CORE_LOG_DECO_FALST_BLINK=6
+readonly CORE_LOG_DECO_REVERSE=7
+
 
 ### Logging Settings
 # switch log level
@@ -111,14 +126,14 @@ declare -g LOG_COLOR_STDOUT
 declare -g LOG_COLOR_STDERR
 
 # Colors Settings
-declare -i -g CORE_LOG_COLOR_CRIT="${CORE_LOG_COLOR_MAGENTA}"
-declare -i -g CORE_LOG_COLOR_ERROR="${CORE_LOG_COLOR_RED}"
+declare -i -g CORE_LOG_COLOR_CRIT="${CORE_LOG_DECO_REVERSE}"
+declare -i -g CORE_LOG_COLOR_ERROR="${CORE_LOG_BCOLOR_RED}"
 declare -i -g CORE_LOG_COLOR_NOTICE="${CORE_LOG_COLOR_CYAN}"
 declare -i -g CORE_LOG_COLOR_INFO="${CORE_LOG_COLOR_GREEN}"
 declare -i -g CORE_LOG_COLOR_DEBUG="${CORE_LOG_COLOR_YELLOW}"
-declare -i -g CORE_LOG_COLOR_TRACE="${CORE_LOG_COLOR_YELLOW}"
-declare -i -g CORE_LOG_COLOR_STDERR="${CORE_LOG_COLOR_BLUE}"
-declare -i -g CORE_LOG_COLOR_SIGERR="${CORE_LOG_COLOR_BLUE}"
+declare -i -g CORE_LOG_COLOR_TRACE="${CORE_LOG_DECO_UNDERLINE}"
+declare -i -g CORE_LOG_COLOR_STDERR="${CORE_LOG_BCOLOR_MAGENTA}"
+declare -i -g CORE_LOG_COLOR_SIGERR="${CORE_LOG_BCOLOR_BLUE}"
 
 # stdout/stderr IO Settings
 readonly CORE_LOG_STDOUT="1"
