@@ -18,6 +18,8 @@ Neobash ログ管理用コアライブラリ
 * LOG_NOTICE : NOTICE ログの出力を切り替えます。 default: ``true``
 * LOG_INFO : INFO ログの出力を切り替えます。 default: ``true``
 * LOG_DEBUG : DEBUG ログの出力を切り替えます。 default: ``false``
+* LOG_STDERR : 標準エラー出力に出力されたログの出力を切り替えます。 default: ``true``
+* LOG_SIGERR : SIGERRのログ出力を切り替えます。 default: ``true``
 
 以下はログのフォーマット制御用。
 * LOG_FORMAT : ログのフォーマットとして``plain`` または ``json``を指定できます。 default: ``plain``
@@ -64,6 +66,8 @@ LOG_DEBUG_FILE="mylib/myutil.sh mylib/string.sh" ./myscript.sh
 * [core::log::crit](#corelogcrit)
 * [core::log::error](#corelogerror)
 * [core::log::error_exit](#corelogerrorexit)
+* [core::log::echo](#corelogecho)
+* [core::log::echo_err](#corelogechoerr)
 * [core::log::notice](#corelognotice)
 * [core::log::info](#coreloginfo)
 * [core::log::debug](#corelogdebug)
@@ -131,6 +135,34 @@ Error ログを出力し、exit します。
 #### 標準エラー出力
 
 * Error ログと、有効時はスタックトレースを出力します。
+
+### core::log::echo
+
+関数の出力と混ざらないように、標準出力に文字列をechoで出力します。
+
+Alias is defined as ``log::echo``
+
+#### Exit codes
+
+* 0
+
+#### Output on stdout
+
+* message.
+
+### core::log::echo_err
+
+関数の出力と混ざらないように、標準エラー出力に文字列をechoで出力します。
+
+Alias is defined as ``log::echo_err``
+
+#### Exit codes
+
+* 0
+
+#### Output on stdout
+
+* message.
 
 ### core::log::notice
 

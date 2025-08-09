@@ -19,6 +19,8 @@ Controlling log level. Set true or false.
 * LOG_NOTICE : Switch the output of the NOTICE log. default: ``true``
 * LOG_INFO : Switch the output of the INFO log. default: ``true``
 * LOG_DEBUG : Switch the output of the DEBUG log. default: ``false``
+* LOG_STDERR : Switch the output of the standard error log. default: ``true``
+* LOG_SIGERR : Switch the output of the SIGERROR log. default: ``true``
 
 Controlling log format.
 * LOG_FORMAT : Set the log format ``plain`` or ``json``. default: ``plain``
