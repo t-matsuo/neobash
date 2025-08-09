@@ -64,8 +64,11 @@ LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 
 * [core::log::stack_trace](#corelogstacktrace)
 * [core::log::crit](#corelogcrit)
+* [core::log::sig_error](#corelogsigerror)
 * [core::log::error](#corelogerror)
 * [core::log::error_exit](#corelogerrorexit)
+* [core::log::echo](#corelogecho)
+* [core::log::echo_err](#corelogechoerr)
 * [core::log::notice](#corelognotice)
 * [core::log::info](#coreloginfo)
 * [core::log::debug](#corelogdebug)
@@ -103,6 +106,22 @@ Alias is defined as ``log::crit``
 
 * output critical log message and stack trace.
 
+### core::log::sig_error
+
+Logger for SIGERR.
+
+#### Arguments
+
+* **$1** (string): log message.
+
+#### Exit codes
+
+* 0
+
+#### Output on stderr
+
+* output error log message and stack trace.
+
 ### core::log::error
 
 Logger for error.
@@ -138,6 +157,34 @@ Alias is defined as ``log::error_exit``
 #### Output on stderr
 
 * output error log message and stack trace.
+
+### core::log::echo
+
+print message to stdout to prevent mixing of function output.
+
+Alias is defined as ``log::echo``
+
+#### Exit codes
+
+* 0
+
+#### Output on stdout
+
+* message.
+
+### core::log::echo_err
+
+print message to stderr to prevent mixing of function output.
+
+Alias is defined as ``log::echo_err``
+
+#### Exit codes
+
+* 0
+
+#### Output on stdout
+
+* message.
 
 ### core::log::notice
 
