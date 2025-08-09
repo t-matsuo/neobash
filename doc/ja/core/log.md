@@ -43,6 +43,8 @@ LOG_DEBUG=true LOG_STACK_TRACE=false ./myscript.sh
 * LOG_PREFIX_INFO :   INFO ログのプレフィックスを設定します。default: ``INFO``
 * LOG_PREFIX_DEBUG :  DEBUG ログのプレフィックスを設定します。default: ``DEBUG``
 * LOG_PREFIX_TRACE :  TRACE ログのプレフィックスを設定します。default: ``TRACE``
+* LOG_PREFIX_STDERR : 標準出力に出力されたログのプレフィックスを設定します。default: ``STDERR``
+* LOG_PREFIX_SIGERR : SIGERRのログのプレフィックスを設定します。 default: ``SIGERR``
 
 デバッグログのフィルタリング用。
 * LOG_DEBUG_FUNC : 指定した関数名のログだけ出力します。default: ``''``
