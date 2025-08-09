@@ -151,7 +151,7 @@ __core::log::stdout__() {
     local COLOR="$1"
     local LOG="$2"
     if [[ "$LOG_COLOR_STDOUT" == "true" ]]; then
-        __core::log::color_terminal__ "$COLOR" "$LOG"
+        __core::log::color_terminal__ "$COLOR" "$LOG" >&$core_log_saved_stdout
     else
         echo -e "$LOG"
     fi
@@ -541,6 +541,8 @@ alias log::disable_err_trap='core::log::disable_err_trap'
 # NOTE: need to call it before 'exec 2> >(__core::log::read_stderr__)'
 __core::log::switch_terminal_color__
 
+# save stdout
+exec {core_log_saved_stdout}>&1
 # save stderr
 exec {core_log_saved_stderr}>&2
 # redirect stderr to append header and color settings

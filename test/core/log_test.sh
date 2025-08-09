@@ -56,6 +56,18 @@ test_core::log::info() {
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info log" "$OUTPUT"
 }
 
+test_core::log::info_dev_null() {
+  core::log::info "info log"
+  assert_exit_code "0"
+  sub_func() {
+    echo "function output"
+    core::log::info "this log is outputed to stdout forcely"
+  }
+
+  local OUTPUT=$( sub_func )
+  assert_matches "function output" "$OUTPUT"
+}
+
 test_core::log::info_with_escaping_line_break() {
   local TEXT="info line break"$'\n'"log"
   core::log::info "$TEXT"
