@@ -20,6 +20,8 @@
 # * LOG_NOTICE : Switch the output of the NOTICE log. default: ``true``
 # * LOG_INFO : Switch the output of the INFO log. default: ``true``
 # * LOG_DEBUG : Switch the output of the DEBUG log. default: ``false``
+# * LOG_STDERR : Switch the output of the standard error log. default: ``true``
+# * LOG_SIGERR : Switch the output of the SIGERROR log. default: ``true``
 #
 # Controlling log format.
 # * LOG_FORMAT : Set the log format ``plain`` or ``json``. default: ``plain``
@@ -97,6 +99,7 @@ readonly CORE_LOG_DECO_REVERSE=7
 : "${LOG_INFO:=true}"
 : "${LOG_DEBUG:=false}"
 : "${LOG_STDERR:=true}"
+: "${LOG_SIGERR:=true}"
 
 # show stack trace
 : "${LOG_STACK_TRACE:=true}"
@@ -370,8 +373,10 @@ core::log::stack_trace() {
 # @stderr output critical log message and stack trace.
 # @exitcode 1
 core::log::crit() {
-    [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_CRIT}" "${1:-}"
-    core::log::stack_trace "${LOG_PREFIX_CRIT}" "${1:-}"
+    if [[ "$LOG_CRIT" == "true" ]]; then
+        [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_CRIT}" "${1:-}"
+        core::log::stack_trace "${LOG_PREFIX_CRIT}" "${1:-}"
+    fi
     exit 1
 }
 
@@ -381,8 +386,10 @@ core::log::crit() {
 # @stderr output error log message and stack trace.
 # @exitcode 0
 core::log::sig_error() {
-    [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_SIGERR}" "${1:-}"
-    core::log::stack_trace "${LOG_PREFIX_SIGERR}" "${1:-}"
+    if [[ "$LOG_SIGERR" == "true" ]]; then
+        [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_SIGERR}" "${1:-}"
+        core::log::stack_trace "${LOG_PREFIX_SIGERR}" "${1:-}"
+    fi
     return 0
 }
 
@@ -393,8 +400,10 @@ core::log::sig_error() {
 # @stderr output error log message and stack trace.
 # @exitcode 0
 core::log::error() {
-    [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_ERROR}" "${1:-}"
-    core::log::stack_trace "${LOG_PREFIX_ERROR}" "${1:-}"
+    if [[ "$LOG_ERROR" == "true" ]]; then
+        [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_ERROR}" "${1:-}"
+        core::log::stack_trace "${LOG_PREFIX_ERROR}" "${1:-}"
+    fi
     return 0
 }
 
@@ -413,7 +422,7 @@ core::log::error_exit() {
 # @description reader for stderr.
 __core::log::read_stderr__() {
     while read -r line; do
-        __core::log__ "${LOG_PREFIX_STDERR}" "${line}"
+        [[ "$LOG_STDERR" == "true" ]] && __core::log__ "${LOG_PREFIX_STDERR}" "${line}"
     done
 }
 
