@@ -417,6 +417,28 @@ __core::log::read_stderr__() {
     done
 }
 
+# @description print message to stdout to prevent mixing of function output.
+#
+# Alias is defined as ``log::echo``
+# @args echo's args
+# @stdout message.
+# @exitcode 0
+core::log::echo() {
+    echo "$@" >&$core_log_saved_stdout
+    return 0
+}
+
+# @description print message to stderr to prevent mixing of function output.
+#
+# Alias is defined as ``log::echo_err``
+# @args echo's args
+# @stdout message.
+# @exitcode 0
+core::log::echo_err() {
+    echo "$@" >&$core_log_saved_stderr
+    return 0
+}
+
 # @description Logger for notice.
 #
 # Alias is defined as ``log::notice``
@@ -570,6 +592,8 @@ alias log::stack_trace='core::log::stack_trace'
 alias log::crit='core::log::crit'
 alias log::error='core::log::error'
 alias log::error_exit='core::log::error_exit'
+alias log::echo='core::log::echo'
+alias log::echo_err='core::log::echo_err'
 alias log::notice='core::log::notice'
 alias log::info='core::log::info'
 alias log::debug='core::log::debug'
