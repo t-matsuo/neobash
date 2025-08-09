@@ -9,15 +9,15 @@ test_core::log::stack_trace() {
   $( core::log::stack_trace )
   assert_exit_code "0"
 
-  local OUTPUT=$( core::log::stack_trace {stderr}>&1 )
-  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} TRACE runner::run_test" "$OUTPUT"
+  local OUTPUT=$( core::log::stack_trace {core_log_saved_stderr}>&1 )
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} TRACE test_core::log::stack_trace()" "$OUTPUT"
 }
 
 test_core::log::crit() {
   $( core::log::crit "crit log" )
   assert_exit_code "1"
 
-  local OUTPUT=$( core::log::crit "crit log" {stderr}>&1 )
+  local OUTPUT=$( core::log::crit "crit log" {core_log_saved_stderr}>&1 )
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} CRIT crit log" "$OUTPUT"
   assert_matches "[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} TRACE test_core::log::crit" "$OUTPUT"
 }
@@ -26,16 +26,16 @@ test_core::log::error_exit() {
   $( core::log::error_exit "error exit log" )
   assert_exit_code "1"
 
-  local OUTPUT=$( core::log::error_exit "error exit log" {stderr}>&1 )
+  local OUTPUT=$( core::log::error_exit "error exit log" {core_log_saved_stderr}>&1 )
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} ERROR error exit log" "$OUTPUT"
-  assert_matches "[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} TRACE core::log::error" "$OUTPUT"
+  assert_matches "[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} TRACE test_core::log::error_exit()" "$OUTPUT"
 }
 
 test_core::log::error() {
   core::log::error "error log"
   assert_exit_code "0"
 
-  local OUTPUT=$( core::log::error "error log" {stderr}>&1 )
+  local OUTPUT=$( core::log::error "error log" {core_log_saved_stderr}>&1 )
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} ERROR error log" "$OUTPUT"
   assert_matches "[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} TRACE test_core::log::error" "$OUTPUT"
 }
@@ -133,9 +133,9 @@ test_core::log::debug() {
   core::log::debug "debug log"
   assert_exit_code "0"
 
-  local OUTPUT=$( core::log::debug "debug log" {stderr}>&1 )
+  local OUTPUT=$( core::log::debug "debug log" {core_log_saved_stderr}>&1 )
   assert_exit_code "0"
 
-  local OUTPUT=$( LOG_DEBUG="true" core::log::debug "debug log" {stderr}>&1 )
+  local OUTPUT=$( LOG_DEBUG="true" core::log::debug "debug log" {core_log_saved_stderr}>&1 )
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} DEBUG debug log   \[test_core::log::debug()" "$OUTPUT"
 }
