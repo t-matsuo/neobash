@@ -40,6 +40,7 @@ LOG_DEBUG=true LOG_STACK_TRACE=false ./myscript.sh
 * LOG_PREFIX_CRIT :   CRIT ログのプレフィックスを設定します。default: ``CRIT``
 * LOG_PREFIX_ERROR :  ERROR ログのプレフィックスを設定します。default: ``ERROR``
 * LOG_PREFIX_NOTICE : NOTICE ログのプレフィックスを設定します。default: ``NOTICE``
+* LOG_PREFIX_WARN :   WARN ログのプレフィックスを設定します。default: ``NOTICE``
 * LOG_PREFIX_INFO :   INFO ログのプレフィックスを設定します。default: ``INFO``
 * LOG_PREFIX_DEBUG :  DEBUG ログのプレフィックスを設定します。default: ``DEBUG``
 * LOG_PREFIX_TRACE :  TRACE ログのプレフィックスを設定します。default: ``TRACE``
@@ -70,6 +71,7 @@ LOG_DEBUG_FILE="mylib/myutil.sh mylib/string.sh" ./myscript.sh
 * [core::log::error_exit](#corelogerrorexit)
 * [core::log::echo](#corelogecho)
 * [core::log::echo_err](#corelogechoerr)
+* [core::log::warn](#corelogwarn)
 * [core::log::notice](#corelognotice)
 * [core::log::info](#coreloginfo)
 * [core::log::debug](#corelogdebug)
@@ -165,6 +167,43 @@ Alias is defined as ``log::echo_err``
 #### Output on stdout
 
 * message.
+
+### core::log::warn
+
+Warn ログを出力します。
+
+関数名のエイリアスとして``log::warn``が定義されています。
+
+#### 引数
+
+* **$1** (string): ログメッセージ。
+
+#### Exit codes
+
+* 0
+
+#### 標準出力
+
+* Warn ログを出力します。
+
+### core::log::info
+
+Info ログを出力します。
+
+関数名のエイリアスとして``log::info``が定義されています。
+
+#### 引数
+
+* **$1** (string): ログメッセージ。
+
+#### Exit codes
+
+* 0
+
+#### 標準出力
+
+* Info ログを出力します。
+
 
 ### core::log::notice
 

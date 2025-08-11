@@ -41,6 +41,7 @@ Controlling log output destination.
 Controlling log prefix.
 * LOG_PREFIX_CRIT : Set the log prefix for CRIT log. default: ``CRIT``
 * LOG_PREFIX_ERROR : Set the log prefix for ERROR log. default: ``ERROR``
+* LOG_PREFIX_WARN : Set the log prefix for ERROR log. default: ``WARN``
 * LOG_PREFIX_NOTICE : set the log prefix for NOTICE log. default: ``NOTICE``
 * LOG_PREFIX_INFO : set the log prefix for INFO log. default: ``INFO``
 * LOG_PREFIX_DEBUG : set the log prefix for DEBUG log. default: ``DEBUG``
@@ -73,6 +74,7 @@ LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 * [core::log::error_exit](#corelogerrorexit)
 * [core::log::echo](#corelogecho)
 * [core::log::echo_err](#corelogechoerr)
+* [core::log::warn](#corelogwarn)
 * [core::log::notice](#corelognotice)
 * [core::log::info](#coreloginfo)
 * [core::log::debug](#corelogdebug)
@@ -189,6 +191,24 @@ Alias is defined as ``log::echo_err``
 #### Output on stdout
 
 * message.
+
+### core::log::warn
+
+Logger for warn.
+
+Alias is defined as ``log::warn``
+
+#### Arguments
+
+* **$1** (string): log message.
+
+#### Exit codes
+
+* 0
+
+#### Output on stdout
+
+* Warn log.
 
 ### core::log::notice
 

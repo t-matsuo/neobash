@@ -42,6 +42,7 @@
 # Controlling log prefix.
 # * LOG_PREFIX_CRIT : Set the log prefix for CRIT log. default: ``CRIT``
 # * LOG_PREFIX_ERROR : Set the log prefix for ERROR log. default: ``ERROR``
+# * LOG_PREFIX_WARN : Set the log prefix for ERROR log. default: ``WARN``
 # * LOG_PREFIX_NOTICE : set the log prefix for NOTICE log. default: ``NOTICE``
 # * LOG_PREFIX_INFO : set the log prefix for INFO log. default: ``INFO``
 # * LOG_PREFIX_DEBUG : set the log prefix for DEBUG log. default: ``DEBUG``
@@ -97,6 +98,7 @@ readonly CORE_LOG_DECO_REVERSE=7
 # switch log level
 : "${LOG_CRIT:=true}"
 : "${LOG_ERROR:=true}"
+: "${LOG_WARN:=true}"
 : "${LOG_NOTICE:=true}"
 : "${LOG_INFO:=true}"
 : "${LOG_DEBUG:=false}"
@@ -133,6 +135,7 @@ declare -g LOG_COLOR_STDERR
 # Colors Settings
 declare -i -g CORE_LOG_COLOR_CRIT="${CORE_LOG_DECO_REVERSE}"
 declare -i -g CORE_LOG_COLOR_ERROR="${CORE_LOG_BCOLOR_RED}"
+declare -i -g CORE_LOG_COLOR_WARN="${CORE_LOG_COLOR_RED}"
 declare -i -g CORE_LOG_COLOR_NOTICE="${CORE_LOG_COLOR_CYAN}"
 declare -i -g CORE_LOG_COLOR_INFO="${CORE_LOG_COLOR_GREEN}"
 declare -i -g CORE_LOG_COLOR_DEBUG="${CORE_LOG_COLOR_YELLOW}"
@@ -145,6 +148,7 @@ readonly CORE_LOG_STDOUT="1"
 readonly CORE_LOG_STDERR="2"
 : "${CORE_LOG_IO_CRIT:=$CORE_LOG_STDERR}"
 : "${CORE_LOG_IO_ERROR:=$CORE_LOG_STDERR}"
+: "${CORE_LOG_IO_WARN:=$CORE_LOG_STDERR}"
 : "${CORE_LOG_IO_NOTICE:=$CORE_LOG_STDOUT}"
 : "${CORE_LOG_IO_INFO:=$CORE_LOG_STDOUT}"
 : "${CORE_LOG_IO_DEBUG:=$CORE_LOG_STDERR}"
@@ -155,6 +159,7 @@ readonly CORE_LOG_STDERR="2"
 # Log Prefix
 : "${LOG_PREFIX_CRIT:=CRIT}"
 : "${LOG_PREFIX_ERROR:=ERROR}"
+: "${LOG_PREFIX_WARN:=WARN}"
 : "${LOG_PREFIX_NOTICE:=NOTICE}"
 : "${LOG_PREFIX_INFO:=INFO}"
 : "${LOG_PREFIX_DEBUG:=DEBUG}"
@@ -274,6 +279,10 @@ __core::log__() {
                 ;;
             "core::log::sig_error")
                 __core::log::stderr__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
+                ;;
+            "core::log::warn")
+                [[ "${CORE_LOG_IO_WARN}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_WARN}" "$LOG"
+                [[ "${CORE_LOG_IO_WARN}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_WARN}" "$LOG"
                 ;;
             "core::log::notice")
                 [[ "${CORE_LOG_IO_NOTICE}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_NOTICE}" "$LOG"
@@ -450,6 +459,17 @@ core::log::echo_err() {
     return 0
 }
 
+# @description Logger for warn.
+#
+# Alias is defined as ``log::warn``
+# @arg $1 string log message.
+# @stdout Warn log.
+# @exitcode 0
+core::log::warn() {
+    [[ "$LOG_WARN" == "true" ]] && __core::log__ "${LOG_PREFIX_WARN}" "${1:-}"
+    return 0
+}
+
 # @description Logger for notice.
 #
 # Alias is defined as ``log::notice``
@@ -605,6 +625,7 @@ alias log::error='core::log::error'
 alias log::error_exit='core::log::error_exit'
 alias log::echo='core::log::echo'
 alias log::echo_err='core::log::echo_err'
+alias log::warn='core::log::warn'
 alias log::notice='core::log::notice'
 alias log::info='core::log::info'
 alias log::debug='core::log::debug'
