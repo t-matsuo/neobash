@@ -46,6 +46,8 @@
 # * LOG_PREFIX_INFO : set the log prefix for INFO log. default: ``INFO``
 # * LOG_PREFIX_DEBUG : set the log prefix for DEBUG log. default: ``DEBUG``
 # * LOG_PREFIX_TRACE : set the log prefix for TRACE log. default: ``TRACE``
+# * LOG_PREFIX_STDERR : set the log prefix for stderr log default: ``STDERR``
+# * LOG_PREFIX_SIGERR : set the log prefix for SIGERROR log default: ``SIGERR``
 #
 # Controlling debug log filter.
 # * LOG_DEBUG_FUNC : select the debug log by function name. default: ``''``
