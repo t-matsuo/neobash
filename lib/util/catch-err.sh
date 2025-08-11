@@ -1,11 +1,26 @@
 #!/usr/bin/env bash
 # Copyright 2025 MATSUO Takatoshi (matsuo.tak@gmail.com)
 # Released under the MIT licence: http://opensource.org/licenses/mit-license
+#
+# @file util/catch-err.sh
+# @brief Neobash util/catch-err.sh library
+# @description
+# * Provides a wrapper function "util::catch_output" for executing functions and commands.
+# * You can assign the stdout and stderr output during function execution to separate variables.
 
 nb::require "core/log.sh core/arg.sh"
 nb::check_bash_min_version "4.3.0" \
     || core::log::error_exit "bash version 4.3.0 or higher is required for using util/catch-err.sh library to use nameref"
 
+# @description wrapper function for executing specified function or command
+#
+# @option --stdout <string> Variable name to assign stdout. (required)
+# @option --stdout <string> Variable name to assign stderr. (required)
+# @option --catch-sigerr <true/false> False means drop SIGERR log (optional) DEFAULT:``true``
+# @option --clear-env <true/false> True means clearing all environment varialbes when executing command. you cannot use true when executing function. (optional) DEFAULT:``false``
+# @stdout None.
+# @stderr Debug log.
+# @exitcode exit code of specified function or command
 util::catch_output() {
     local __CATCH_STDOUT_MSG__=""
     local __CATCH_ERR_MSG__=""
