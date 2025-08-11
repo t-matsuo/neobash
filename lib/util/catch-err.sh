@@ -10,12 +10,16 @@ util::catch_output() {
     local __CATCH_STDOUT_MSG__=""
     local __CATCH_ERR_MSG__=""
     local __CATCH_RETURN_CODE__=""
+    local __CATCH_LOG_SIGERR_ORG__="$LOG_SIGERR"
+    local __CLEAR_ALL_ENV__=""
 
     core::arg::init_local
     arg::add_option       -l "STDOUT" -o "--stdout" -t "string" -r "true" -h "Stdout Variable"
     arg::add_option_alias -l "STDOUT" -o "-o"
     arg::add_option       -l "STDERR" -o "--stderr" -t "string" -r "true" -h "Stderr Variable"
     arg::add_option_alias -l "STDERR" -o "-e"
+    arg::add_option       -l "CATCH_SIGERR" -o "--catch-sigerr" -t "bool" -r "false" -d "true"  -h "Catch SIGERR and output it"
+    arg::add_option       -l "CLEAR_ENV"    -o "--clear-env"    -t "bool" -r "false" -d "false" -h "Clear all environment variables using env -i"
     core::arg::parse "$@"
 
     core::log::debug "stdout val=${ARGS[STDOUT]}"
@@ -24,15 +28,18 @@ util::catch_output() {
     local -n __CORE_LOG_STDOUT_RESULT__="${ARGS[STDOUT]}"
     local -n __CORE_LOG_STDERR_RESULT__="${ARGS[STDERR]}"
 
+    [[ "${ARGS[CLEAR_ENV]}" == "true" ]] && __CLEAR_ALL_ENV__="env -i"
+    LOG_SIGERR="${ARGS[CATCH_SIGERR]}"
     eval " $(
         (
-            "${ARG_OTHERS[@]}"
+            $__CLEAR_ALL_ENV__ "${ARG_OTHERS[@]}"
         ) \
         2> >( __CATCH_ERR_MSG__=$(cat); typeset -p __CATCH_ERR_MSG__) \
         > >( __CATCH_STDOUT_MSG__=$(cat); typeset -p __CATCH_STDOUT_MSG__); \
         __CATCH_RETURN_CODE__=$?; \
         typeset -p __CATCH_RETURN_CODE__
     )"
+    LOG_SIGERR="$__CATCH_LOG_SIGERR_ORG__"
 
     core::log::debug "stderr=$__CATCH_ERR_MSG__"
     core::log::debug "stdout=$__CATCH_STDOUT_MSG__"
