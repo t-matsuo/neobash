@@ -45,14 +45,13 @@ util::catch_output() {
 
     [[ "${ARGS[CLEAR_ENV]}" == "true" ]] && __CLEAR_ALL_ENV__="env -i"
     LOG_SIGERR="${ARGS[CATCH_SIGERR]}"
-    eval " $(
+    eval "$(
         (
             $__CLEAR_ALL_ENV__ "${ARG_OTHERS[@]}"
         ) \
-        2> >( __CATCH_ERR_MSG__=$(cat); typeset -p __CATCH_ERR_MSG__) \
+        2> >( __CATCH_ERR_MSG__=$(cat);   typeset -p __CATCH_ERR_MSG__) \
         > >( __CATCH_STDOUT_MSG__=$(cat); typeset -p __CATCH_STDOUT_MSG__); \
-        __CATCH_RETURN_CODE__=$?; \
-        typeset -p __CATCH_RETURN_CODE__
+        __CATCH_RETURN_CODE__=$?;         typeset -p __CATCH_RETURN_CODE__
     )"
     LOG_SIGERR="$__CATCH_LOG_SIGERR_ORG__"
 
