@@ -46,7 +46,6 @@ util::cmd::catch_output() {
 
     [[ "${ARGS[CLEAR_ENV]}" == "true" ]] && __CATCH_CLEAR_ALL_ENV__="env -i"
     LOG_SIGERR="${ARGS[CATCH_SIGERR]}"
-    TMOUT=2
     eval "$(
         (
             $__CATCH_CLEAR_ALL_ENV__ "${ARG_OTHERS[@]}"
