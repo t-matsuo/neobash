@@ -8,7 +8,7 @@
 # * library for executing command or function
 
 nb::require "core/log.sh core/arg.sh"
-nb::command_check "sleep kill ps timeout"
+nb::command_check "sleep timeout"
 nb::check_bash_min_version "4.3.0" \
     || core::log::error_exit "bash version 4.3.0 or higher is required for using util/cmd.sh library to use nameref"
 
