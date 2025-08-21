@@ -34,7 +34,7 @@ Wrapper function for executing specified function or command. It can assign stdo
 
 * **--catch-sigerr \<true/false\>**
 
-  False means drop SIGERR log (optional) DEFAULT:``true``
+  False means drop SIGERR log (optional) DEFAULT:``$LOG_SIGERR`` (variable of core/log.sh library)
 
 * **-s \<string\>**
 
@@ -50,11 +50,19 @@ Wrapper function for executing specified function or command. It can assign stdo
 
 * **--timeout \<int\>**
 
-  Timeout(sec). 0 means no timeout.
+  Timeout(sec). 0 means no timeout. DEFAULT:``600.``
 
 * **-t \<int\>**
 
   Alias for --timeout
+
+* **--grace-period \<int\>**
+
+  Grace period for timed out (TERM->KILL) (sec). DEFAULT:``1``
+
+* **-g \<int\>**
+
+  Alias for --grace-period
 
 #### Exit codes
 
