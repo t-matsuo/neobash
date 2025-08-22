@@ -66,8 +66,8 @@ util::cmd::exec() {
     core::log::debug "stdout val=${ARGS[STDOUT]}"
     core::log::debug "stderr val=${ARGS[STDERR]}"
 
-    local -n __CORE_LOG_STDOUT_RESULT__="${ARGS[STDOUT]}"
-    local -n __CORE_LOG_STDERR_RESULT__="${ARGS[STDERR]}"
+    local -n __UTIL_CMD_STDOUT_RESULT__="${ARGS[STDOUT]}"
+    local -n __UTIL_CMD_STDERR_RESULT__="${ARGS[STDERR]}"
 
     [[ "${ARGS[CLEAR_ENV]}" == "true" ]] && __UTIL_CMD_EXEC_CLEAR_ALL_ENV__="env -i"
 
@@ -194,8 +194,8 @@ util::cmd::exec() {
     core::log::debug "stdout=$__UTIL_CMD_EXEC_STDOUT_MSG__"
     core::log::debug "rc=$__UTIL_CMD_EXEC_RETURN_CODE__"
 
-    __CORE_LOG_STDERR_RESULT__="$__UTIL_CMD_EXEC_ERR_MSG__"
-    __CORE_LOG_STDOUT_RESULT__="$__UTIL_CMD_EXEC_STDOUT_MSG__"
+    __UTIL_CMD_STDERR_RESULT__="$__UTIL_CMD_EXEC_ERR_MSG__"
+    __UTIL_CMD_STDOUT_RESULT__="$__UTIL_CMD_EXEC_STDOUT_MSG__"
     return $__UTIL_CMD_EXEC_RETURN_CODE__
 }
 
