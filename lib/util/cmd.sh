@@ -42,7 +42,7 @@ util::cmd::exec() {
     local __UTIL_CMD_EXEC_CHILD_PGID__=""
     local __UTIL_CMD_EXEC_TIMEDOUT_COUNTER__=0
     local __UTIL_CMD_EXEC_GRACE_COUNTER__=0
-    local __UTIL_CMD_EXEC_ISSUED_SIGKILL__=""
+    local __UTIL_CMD_EXEC_ISSUED_SIGNAL__=""
 
     core::arg::init_local
     arg::add_option       -l "STDOUT" -o "--stdout" -t "string" -r "true" -h "Stdout Variable"
@@ -120,14 +120,14 @@ util::cmd::exec() {
                             # if grace period is 0, use SIGKILL immediately and break
                             if [[ ${ARGS[GRACE_PERIOD]} -le 0 ]]; then
                                 log::debug "grace period is ${ARGS[GRACE_PERIOD]}s so killing child process (SIGKILL) PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
-                                __UTIL_CMD_EXEC_ISSUED_SIGKILL__="SIGKILL"
+                                __UTIL_CMD_EXEC_ISSUED_SIGNAL__="SIGKILL"
                                 kill -KILL -"${__UTIL_CMD_EXEC_CHILD_PGID__}" 2>/dev/null
                                 break
                             fi
 
                             log::debug "killing child process (SIGTERM) PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
                             if [[ -n $__UTIL_CMD_EXEC_CHILD_PGID__ ]]; then
-                                __UTIL_CMD_EXEC_ISSUED_SIGKILL__=SIGTERM
+                                __UTIL_CMD_EXEC_ISSUED_SIGNAL__=SIGTERM
                                 kill -TERM -"${__UTIL_CMD_EXEC_CHILD_PGID__}" 2>/dev/null
                                 log::debug "waiting grace period 0/${ARGS[GRACE_PERIOD]} sec PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
 
@@ -144,7 +144,7 @@ util::cmd::exec() {
                                         log::debug "waiting grace period ${__UTIL_CMD_EXEC_GRACE_COUNTER__}/${ARGS[GRACE_PERIOD]} sec PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
                                         if [[ __UTIL_CMD_EXEC_GRACE_COUNTER__ -ge ${ARGS[GRACE_PERIOD]} ]]; then
                                             log::debug "killing child process (SIGKILL) PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
-                                            __UTIL_CMD_EXEC_ISSUED_SIGKILL__=SIGKILL
+                                            __UTIL_CMD_EXEC_ISSUED_SIGNAL__=SIGKILL
                                             kill -KILL -"${__UTIL_CMD_EXEC_CHILD_PGID__}" 2>/dev/null
                                             break
                                         fi
@@ -167,8 +167,8 @@ util::cmd::exec() {
                 __UTIL_CMD_EXEC_RETURN_CODE__=$?
 
                 # if SIGTERM or SIGKILL were issued by timed out, return 124 (timed out) regardless of the return code of the child process
-                if [[ -n "$__UTIL_CMD_EXEC_ISSUED_SIGKILL__" ]]; then
-                    core::log::error "Timed out and $__UTIL_CMD_EXEC_ISSUED_SIGKILL__ was issued, so return 124. Child process rc=$__UTIL_CMD_EXEC_RETURN_CODE__."
+                if [[ -n "$__UTIL_CMD_EXEC_ISSUED_SIGNAL__" ]]; then
+                    core::log::error "Timed out and $__UTIL_CMD_EXEC_ISSUED_SIGNAL__ was issued, so return 124. Child process rc=$__UTIL_CMD_EXEC_RETURN_CODE__."
                     __UTIL_CMD_EXEC_RETURN_CODE__=124
                 fi
                 typeset -p __UTIL_CMD_EXEC_RETURN_CODE__
