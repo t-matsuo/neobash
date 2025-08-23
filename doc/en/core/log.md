@@ -78,6 +78,7 @@ LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 * [core::log::notice](#corelognotice)
 * [core::log::info](#coreloginfo)
 * [core::log::debug](#corelogdebug)
+* [core::log::is_debug](#corelogisdebug)
 * [core::log::enable_err_trap](#corelogenableerrtrap)
 * [core::log::disable_err_trap](#corelogdisableerrtrap)
 
@@ -264,6 +265,17 @@ Alias is defined as ``log::debug``
 #### Output on stderr
 
 * Debug log.
+
+### core::log::is_debug
+
+determine whether debug mode is enabled.
+
+Alias is defined as ``log::is_debug``
+
+#### Exit codes
+
+* **0**: if it debug mode is enabled
+* **1**: if it debug mode is disabled
 
 ### core::log::enable_err_trap
 

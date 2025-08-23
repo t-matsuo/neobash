@@ -550,6 +550,35 @@ core::log::debug() {
     return 0
 }
 
+# @description determine whether debug mode is enabled.
+#
+# Alias is defined as ``log::is_debug``
+# @exitcode 0 if it debug mode is enabled
+# @exitcode 1 if it debug mode is disabled
+core::log::is_debug() {
+    if [[ "$LOG_DEBUG" == "true" ]]; then
+        return 0
+    fi
+    # debug log for specified function name
+    if [[ -n "${LOG_DEBUG_FUNC:-}" ]]; then
+        for target in ${LOG_DEBUG_FUNC}; do
+            if [[ ${FUNCNAME[1]} =~ $target ]]; then
+                return 0
+            fi
+        done
+    fi
+
+    # debug log for specified file or directory name
+    if [[ -n "${LOG_DEBUG_FILE:-}" ]]; then
+        for target in ${LOG_DEBUG_FILE}; do
+            if [[ ${BASH_SOURCE[1]} =~ $target ]]; then
+                return 0
+            fi
+        done
+    fi
+    return 1
+}
+
 # @internal
 # @description Switching terminal log color.
 # If output to terminal, enable log color, otherwise disable log color.
@@ -629,6 +658,7 @@ alias log::warn='core::log::warn'
 alias log::notice='core::log::notice'
 alias log::info='core::log::info'
 alias log::debug='core::log::debug'
+alias log::is_debug='core::log::is_debug'
 alias log::enable_err_trap='core::log::enable_err_trap'
 alias log::disable_err_trap='core::log::disable_err_trap'
 
