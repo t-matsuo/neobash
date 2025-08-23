@@ -121,37 +121,53 @@ util::cmd::exec() {
                             if [[ ${ARGS[GRACE_PERIOD]} -le 0 ]]; then
                                 log::debug "grace period is ${ARGS[GRACE_PERIOD]}s so killing child process (SIGKILL) PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
                                 __UTIL_CMD_EXEC_ISSUED_SIGNAL__="SIGKILL"
-                                kill -KILL -"${__UTIL_CMD_EXEC_CHILD_PGID__}" 2>/dev/null
+                                if [[ -n "$__UTIL_CMD_EXEC_CHILD_PGID__" ]]; then
+                                    core::log::debug "killing PGID"
+                                    kill -KILL -"${__UTIL_CMD_EXEC_CHILD_PGID__}" 2>/dev/null
+                                else
+                                    core::log::debug "Your environmnet does not support PGID, so use PID to kill -KILL"
+                                    kill -KILL "${__UTIL_CMD_EXEC_CHILD_PID__}" 2>/dev/null
+                                fi
                                 break
                             fi
 
                             log::debug "killing child process (SIGTERM) PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
-                            if [[ -n $__UTIL_CMD_EXEC_CHILD_PGID__ ]]; then
-                                __UTIL_CMD_EXEC_ISSUED_SIGNAL__=SIGTERM
+                            __UTIL_CMD_EXEC_ISSUED_SIGNAL__=SIGTERM
+                            if [[ -n "$__UTIL_CMD_EXEC_CHILD_PGID__" ]]; then
+                                core::log::debug "killing PGID"
                                 kill -TERM -"${__UTIL_CMD_EXEC_CHILD_PGID__}" 2>/dev/null
-                                log::debug "waiting grace period 0/${ARGS[GRACE_PERIOD]} sec PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
+                            else
+                                core::log::debug "Your environmnet does not support PGID, so use PID to kill -TERM"
+                                kill -TERM "${__UTIL_CMD_EXEC_CHILD_PID__}" 2>/dev/null
+                            fi
+                            log::debug "waiting grace period 0/${ARGS[GRACE_PERIOD]} sec PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
 
-                                # sleep 0.2 sec because child process may not be terminated immediately
-                                sleep .2
+                            # sleep 0.2 sec because child process may not be terminated immediately
+                            sleep .2
 
-                                # recheck child process and wait grace period
-                                if kill -0 "$__UTIL_CMD_EXEC_CHILD_PID__" 2>/dev/null; then
-                                    sleep .8
-                                    __UTIL_CMD_EXEC_GRACE_COUNTER__=$(( __UTIL_CMD_EXEC_GRACE_COUNTER__ + 1 ))
+                            # recheck child process and wait grace period
+                            if kill -0 "$__UTIL_CMD_EXEC_CHILD_PID__" 2>/dev/null; then
+                                sleep .8
+                                __UTIL_CMD_EXEC_GRACE_COUNTER__=$(( __UTIL_CMD_EXEC_GRACE_COUNTER__ + 1 ))
 
-                                    # check if child process terminated
-                                    while kill -0 "$__UTIL_CMD_EXEC_CHILD_PID__" 2>/dev/null; do
-                                        log::debug "waiting grace period ${__UTIL_CMD_EXEC_GRACE_COUNTER__}/${ARGS[GRACE_PERIOD]} sec PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
-                                        if [[ __UTIL_CMD_EXEC_GRACE_COUNTER__ -ge ${ARGS[GRACE_PERIOD]} ]]; then
-                                            log::debug "killing child process (SIGKILL) PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
-                                            __UTIL_CMD_EXEC_ISSUED_SIGNAL__=SIGKILL
+                                # check if child process terminated
+                                while kill -0 "$__UTIL_CMD_EXEC_CHILD_PID__" 2>/dev/null; do
+                                    log::debug "waiting grace period ${__UTIL_CMD_EXEC_GRACE_COUNTER__}/${ARGS[GRACE_PERIOD]} sec PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
+                                    if [[ __UTIL_CMD_EXEC_GRACE_COUNTER__ -ge ${ARGS[GRACE_PERIOD]} ]]; then
+                                        log::debug "killing child process (SIGKILL) PID=$__UTIL_CMD_EXEC_CHILD_PID__ PGID=$__UTIL_CMD_EXEC_CHILD_PGID__"
+                                        __UTIL_CMD_EXEC_ISSUED_SIGNAL__=SIGKILL
+                                        if [[ -n "$__UTIL_CMD_EXEC_CHILD_PGID__" ]]; then
+                                            core::log::debug "killing PGID"
                                             kill -KILL -"${__UTIL_CMD_EXEC_CHILD_PGID__}" 2>/dev/null
-                                            break
+                                        else
+                                            core::log::debug "Your environmnet does not support PGID, so use PID to kill -KILL"
+                                            kill -KILL "${__UTIL_CMD_EXEC_CHILD_PID__}" 2>/dev/null
                                         fi
-                                        sleep 1
-                                        __UTIL_CMD_EXEC_GRACE_COUNTER__=$(( __UTIL_CMD_EXEC_GRACE_COUNTER__ + 1 ))
-                                    done
-                                fi
+                                        break
+                                    fi
+                                    sleep 1
+                                    __UTIL_CMD_EXEC_GRACE_COUNTER__=$(( __UTIL_CMD_EXEC_GRACE_COUNTER__ + 1 ))
+                                done
                             fi
                             break
                         fi
