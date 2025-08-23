@@ -589,9 +589,9 @@ __core::log::switch_terminal_color__() {
     fi
 }
 
-# @description Disable error trap
+# @description Enable error trap
 #
-# Alias is defined as ``log::disable_err_trap``
+# Alias is defined as ``log::enable_err_trap``
 # @arg none
 # @stderr none
 # @exitcode 0
@@ -599,9 +599,9 @@ core::log::enable_err_trap() {
     trap 'core::log::sig_error "catch SIGERR (unexpected return code $?)"; [[ "$CORE_LOG_IS_SIGINT" == "true" ]] && exit 1' ERR
 }
 
-# @description Enable error trap
+# @description Disable error trap
 #
-# Alias is defined as ``log::enable_err_trap``
+# Alias is defined as ``log::disable_err_trap``
 # @arg none
 # @stderr none
 # @exitcode 0

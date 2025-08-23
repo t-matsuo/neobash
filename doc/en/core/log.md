@@ -267,9 +267,9 @@ Alias is defined as ``log::debug``
 
 ### core::log::enable_err_trap
 
-Disable error trap
+Enable error trap
 
-Alias is defined as ``log::disable_err_trap``
+Alias is defined as ``log::enable_err_trap``
 
 #### Options
 
@@ -285,9 +285,9 @@ Alias is defined as ``log::disable_err_trap``
 
 ### core::log::disable_err_trap
 
-Enable error trap
+Disable error trap
 
-Alias is defined as ``log::enable_err_trap``
+Alias is defined as ``log::disable_err_trap``
 
 #### Options
 
