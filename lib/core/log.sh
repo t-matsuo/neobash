@@ -37,7 +37,7 @@
 #
 # Controlling log output destination.
 # * LOG_TERMINAL : switch the output of the log to the terminal. default: ``true``
-# * LOG_FILE : Set the log file name. default: ``/dev/null`` (no output to file)
+# * LOG_FILE : Set the log file name. default: empty (no output to file)
 #
 # Controlling log prefix.
 # * LOG_PREFIX_CRIT : Set the log prefix for CRIT log. default: ``CRIT``
@@ -121,7 +121,7 @@ readonly CORE_LOG_DECO_REVERSE=7
 # switch terminal log
 : "${LOG_TERMINAL:=true}"
 # log file name
-: "${LOG_FILE:=/dev/null}"
+: "${LOG_FILE:=""}"
 
 # filter for debug
 : "${LOG_DEBUG_FUNC:=}"
@@ -190,7 +190,7 @@ __core::log::stdout__() {
         fi
     fi
     # output to file
-    echo -e "$LOG" >> "$LOG_FILE"
+    [[ -n "$LOG_FILE" ]] && echo -e "$LOG" >> "$LOG_FILE"
     return 0
 }
 
@@ -207,7 +207,7 @@ __core::log::stderr__() {
         fi
     fi
     # output to file
-    echo -e "$LOG" >> "$LOG_FILE"
+    [[ -n "$LOG_FILE" ]] && echo -e "$LOG" >> "$LOG_FILE"
     return 0
 }
 

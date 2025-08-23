@@ -36,7 +36,7 @@ LOG_DEBUG=true LOG_STACK_TRACE=false ./myscript.sh
 
 Controlling log output destination.
 * LOG_TERMINAL : switch the output of the log to the terminal. default: ``true``
-* LOG_FILE : Set the log file name. default: ``/dev/null`` (no output to file)
+* LOG_FILE : Set the log file name. default: empty (no output to file)
 
 Controlling log prefix.
 * LOG_PREFIX_CRIT : Set the log prefix for CRIT log. default: ``CRIT``

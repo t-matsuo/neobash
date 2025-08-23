@@ -34,7 +34,7 @@ LOG_DEBUG=true LOG_STACK_TRACE=false ./myscript.sh
 
 ログ出力先の指定用。
 * LOG_TERMINAL : スクリプト実行したターミナルへ出力するか切り替えます。default: ``true``
-* LOG_FILE : ログ出力先のファイルを指定します。default: ``/dev/null`` (出力しない)
+* LOG_FILE : ログ出力先のファイルを指定します。default: empty (出力しない)
 
 ログのプレフィックス制御用。
 * LOG_PREFIX_CRIT :   CRIT ログのプレフィックスを設定します。default: ``CRIT``
