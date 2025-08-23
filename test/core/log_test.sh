@@ -151,3 +151,43 @@ test_core::log::debug() {
   local OUTPUT=$( LOG_DEBUG="true" core::log::debug "debug log" {core_log_saved_stderr}>&1 )
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} DEBUG debug log   \[test_core::log::debug()" "$OUTPUT"
 }
+
+test_core::log::info_json() {
+  export LOG_FORMAT=json
+  local OUTPUT=$( core::log::info "info log" )
+  assert_exit_code "0"
+
+  assert_matches '\{"level": "INFO", "timestamp": "[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4}", "message": "info log"\}' "$OUTPUT"
+}
+
+test_core::log::info_TERMINAL_false() {
+  export LOG_TERMINAL=false
+  local OUTPUT=$( core::log::info "info log" )
+  assert_exit_code "0"
+
+  assert_empty "$OUTPUT"
+}
+
+test_core::log::info_plain_FILE() {
+  local file="/tmp/_____tmp_test_log.sh_____"
+  rm -f $file
+  export LOG_TERMINAL=false
+  export LOG_FILE=$file
+  core::log::info "info log"
+  assert_file_exists $file
+
+  assert_file_contains "$file" "INFO info log"
+  rm -f $file
+}
+
+test_core::log::info_json_FILE() {
+  local file="/tmp/_____tmp_test_log.sh_____"
+  rm -f $file
+  export LOG_FILE=$file
+  export LOG_FORMAT=json
+  core::log::info "info log"
+  assert_file_exists $file
+
+  assert_file_contains "$file" '"message": "info log"'
+  rm -f $file
+}
