@@ -28,6 +28,22 @@ test_util::cmd_cmd_normal_error() {
     assert_matches "^myerror$" "$ERROR"
 }
 
+test_util::cmd_cmd_normal_error_no_stdout_variable() {
+    local OUTPUT
+
+    OUTPUT=$( util::cmd::exec -- /usr/bin/bash -c "echo myout; exit 1" )
+    assert_exit_code "1"
+    assert_matches "^myout$" "$OUTPUT"
+}
+
+test_util::cmd_cmd_normal_error_no_stderr_variable() {
+    local OUTPUT
+
+    OUTPUT=$( util::cmd::exec -- /usr/bin/bash -c "echo myout; echo myerror >&2; exit 1" 2>&1 >/dev/null )
+    assert_exit_code "1"
+    assert_matches "^myerror$" "$OUTPUT"
+}
+
 test_util::cmd_cmd_retry_errror() {
     local OUTPUT
     local ERROR
@@ -122,6 +138,33 @@ test_util::cmd_func_normal_error() {
     assert_exit_code "3"
     assert_matches "^myout$" "$OUTPUT"
     assert_matches "^myerror$" "$ERROR"
+}
+
+test_util::cmd_func_normal_error_no_stdout_variable() {
+    local OUTPUT
+
+    internal() {
+        echo myout
+        return 3
+    }
+
+    OUTPUT=$( util::cmd::exec -- internal )
+    assert_exit_code "3"
+    assert_matches "^myout$" "$OUTPUT"
+}
+
+test_util::cmd_func_normal_error_no_stderr_variable() {
+    local OUTPUT
+
+    internal() {
+        echo myout
+        echo myerror >&2
+        return 3
+    }
+
+    OUTPUT=$( util::cmd::exec -- internal 2>&1 >/dev/null )
+    assert_exit_code "3"
+    assert_matches "^myerror$" "$OUTPUT"
 }
 
 test_util::cmd_func_retry_errror() {

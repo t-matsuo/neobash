@@ -14,9 +14,9 @@ nb::check_bash_min_version "4.3.0" \
 
 # @description Wrapper function for executing specified function or command. It can assign stdout/stderr output to separate variables.
 #
-# @option --stdout <string> Variable name to assign stdout. (required)
+# @option --stdout <string> Variable name to assign stdout. If it is not specified, messages output to stdout. (option)
 # @option -o <string> Alias for --stdout
-# @option --stdout <string> Variable name to assign stderr. (required)
+# @option --stdout <string> Variable name to assign stderr. If it is not specified, messages output to stderr. (option)
 # @option -e <string> Alias for --stderr
 # @option --catch-sigerr <true/false> False means drop SIGERR log (optional) DEFAULT:``$LOG_SIGERR`` (variable of core/log.sh library)
 # @option -s <string> Alias for --catch-sigerr
@@ -45,9 +45,9 @@ util::cmd::exec() {
     local __UTIL_CMD_EXEC_ISSUED_SIGNAL__=""
 
     core::arg::init_local
-    arg::add_option       -l "STDOUT" -o "--stdout" -t "string" -r "true" -h "Stdout Variable"
+    arg::add_option       -l "STDOUT" -o "--stdout" -t "string" -r "false" -d "" -h "Stdout Variable"
     arg::add_option_alias -l "STDOUT" -o "-o"
-    arg::add_option       -l "STDERR" -o "--stderr" -t "string" -r "true" -h "Stderr Variable"
+    arg::add_option       -l "STDERR" -o "--stderr" -t "string" -r "false" -d "" -h "Stderr Variable"
     arg::add_option_alias -l "STDERR" -o "-e"
     arg::add_option       -l "CATCH_SIGERR"   -o "--catch-sigerr" -t "bool" -r "false" -d "$LOG_SIGERR" -h "Catch SIGERR and output it"
     arg::add_option_alias -l "CATCH_SIGERR"   -o "-s"
@@ -66,8 +66,16 @@ util::cmd::exec() {
     core::log::debug "stdout val=${ARGS[STDOUT]}"
     core::log::debug "stderr val=${ARGS[STDERR]}"
 
-    local -n __UTIL_CMD_STDOUT_RESULT__="${ARGS[STDOUT]}"
-    local -n __UTIL_CMD_STDERR_RESULT__="${ARGS[STDERR]}"
+    if [[ -n "${ARGS[STDOUT]}" ]]; then
+        local -n __UTIL_CMD_STDOUT_RESULT__="${ARGS[STDOUT]}"
+    else
+        local __UTIL_CMD_STDOUT_RESULT__=""
+    fi
+    if [[ -n "${ARGS[STDERR]}" ]]; then
+        local -n __UTIL_CMD_STDERR_RESULT__="${ARGS[STDERR]}"
+    else
+        local __UTIL_CMD_STDERR_RESULT__=""
+    fi
 
     [[ "${ARGS[CLEAR_ENV]}" == "true" ]] && __UTIL_CMD_EXEC_CLEAR_ALL_ENV__="env -i"
 
@@ -212,6 +220,14 @@ util::cmd::exec() {
 
     __UTIL_CMD_STDERR_RESULT__="$__UTIL_CMD_EXEC_ERR_MSG__"
     __UTIL_CMD_STDOUT_RESULT__="$__UTIL_CMD_EXEC_STDOUT_MSG__"
+
+    if [[ -z "${ARGS[STDOUT]}" ]] && [[ -n "$__UTIL_CMD_STDOUT_RESULT__" ]]; then
+        echo $__UTIL_CMD_STDOUT_RESULT__
+    fi
+    if [[ -z "${ARGS[STDERR]}" ]] && [[ -n "$__UTIL_CMD_STDERR_RESULT__" ]]; then
+        echo $__UTIL_CMD_STDERR_RESULT__ >&2
+    fi
+
     return $__UTIL_CMD_EXEC_RETURN_CODE__
 }
 
