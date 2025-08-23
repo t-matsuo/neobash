@@ -182,10 +182,12 @@ __core::log::color_terminal__() {
 __core::log::stdout__() {
     local COLOR="$1"
     local LOG="$2"
-    if [[ "$LOG_COLOR_STDOUT" == "true" ]]; then
-        __core::log::color_terminal__ "$COLOR" "$LOG" >&$core_log_saved_stdout
-    else
-        echo -e "$LOG"
+    if [[ "$LOG_TERMINAL" == "true" ]]; then
+        if [[ "$LOG_COLOR_STDOUT" == "true" ]]; then
+            __core::log::color_terminal__ "$COLOR" "$LOG" >&$core_log_saved_stdout
+        else
+            echo -e "$LOG"
+        fi
     fi
     # output to file
     echo -e "$LOG" >> "$LOG_FILE"
@@ -197,10 +199,12 @@ __core::log::stdout__() {
 __core::log::stderr__() {
     local COLOR="$1"
     local LOG="$2"
-    if [[ "$LOG_COLOR_STDERR" == "true" ]]; then
-        __core::log::color_terminal__ "$COLOR" "$LOG" >&$core_log_saved_stderr
-    else
-        echo -e "$LOG" >&$core_log_saved_stderr
+    if [[ "$LOG_TERMINAL" == "true" ]]; then
+        if [[ "$LOG_COLOR_STDERR" == "true" ]]; then
+            __core::log::color_terminal__ "$COLOR" "$LOG" >&$core_log_saved_stderr
+        else
+            echo -e "$LOG" >&$core_log_saved_stderr
+        fi
     fi
     # output to file
     echo -e "$LOG" >> "$LOG_FILE"
@@ -217,6 +221,10 @@ __core::log__() {
     local LOG
     local caller="${FUNCNAME[1]}"
     local caller2
+
+    if [[ "$LOG_TERMINAL" != "true" ]] && [[ -z "$LOG_FILE" ]]; then
+        return 0
+    fi
 
     [[ $# -ge 3 ]] && JSON="$3"
 
@@ -248,83 +256,82 @@ __core::log__() {
     # escape control characters without line break and tab
     MESSAGE="${MESSAGE//[]/}"
 
-    if [[ "$LOG_TERMINAL" == "true" ]]; then
-        if [[ "$LOG_TIMESTAMP" == "true" ]]; then
-            printf -v DATE "%($LOG_TIMESTAMP_FORMAT)T"
-        fi
-        if [[ "$LOG_FORMAT" == "plain" ]]; then
-             [[ "$LOG_TIMESTAMP" == "true" ]] && DATE+=" "
-             LEVEL+=" "
-             LOG="${DATE}${LEVEL}${MESSAGE}"
-        elif [[ "$LOG_FORMAT" == "json" ]]; then
-            # escape double quote
-            LEVEL=${LEVEL//\"/\\\"}
-            DATE=${DATE//\"/\\\"}
-            MESSAGE=${MESSAGE//\"/\\\"}
-            LOG="{\"level\": \"${LEVEL}\", \"timestamp\": \"${DATE}\", \"message\": \"${MESSAGE}\"$JSON}"
-        fi
-        # output error and debug log to stderr
-        case "$caller" in
-            "core::log::crit")
-                [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
-                [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
-                ;;
-            "core::log::error")
-                [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
-                [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
-                ;;
-            "core::log::stderr")
-                # for ERR trap
-                __core::log::stderr__ "${CORE_LOG_COLOR_STDERR}" "$LOG"
-                ;;
-            "core::log::sig_error")
-                __core::log::stderr__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
-                ;;
-            "core::log::warn")
-                [[ "${CORE_LOG_IO_WARN}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_WARN}" "$LOG"
-                [[ "${CORE_LOG_IO_WARN}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_WARN}" "$LOG"
-                ;;
-            "core::log::notice")
-                [[ "${CORE_LOG_IO_NOTICE}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_NOTICE}" "$LOG"
-                [[ "${CORE_LOG_IO_NOTICE}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_NOTICE}" "$LOG"
-                ;;
-            "core::log::info")
-                [[ "${CORE_LOG_IO_INFO}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_INFO}" "$LOG"
-                [[ "${CORE_LOG_IO_INFO}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_INFO}" "$LOG"
-                ;;
-            "core::log::debug")
-                [[ "${CORE_LOG_IO_DEBUG}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_DEBUG}" "$LOG"
-                [[ "${CORE_LOG_IO_DEBUG}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_DEBUG}" "$LOG"
-                ;;
-            "__core::log::read_stderr__")
-                __core::log::stderr__ "${CORE_LOG_COLOR_STDERR}" "$LOG"
-                ;;
-            "core::log::stack_trace")
-                caller2="${FUNCNAME[2]}"
-                case "$caller2" in
-                    "core::log::crit")
-                        [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
-                        [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
-                        ;;
-                    "core::log::error")
-                        [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
-                        [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
-                        ;;
-                    "core::log::sig_error")
-                        [[ "${CORE_LOG_IO_SIGERR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
-                        [[ "${CORE_LOG_IO_SIGERR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
-                        ;;
-                    *)
-                        [[ "${CORE_LOG_IO_TRACE}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_TRACE}" "$LOG"
-                        [[ "${CORE_LOG_IO_TRACE}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_TRACE}" "$LOG"
-                        ;;
-                esac
-                ;;
-            *)
-                core::log::crit "Unknown caller: $caller"
-                ;;
-        esac
+    if [[ "$LOG_TIMESTAMP" == "true" ]]; then
+        printf -v DATE "%($LOG_TIMESTAMP_FORMAT)T"
     fi
+    if [[ "$LOG_FORMAT" == "plain" ]]; then
+         [[ "$LOG_TIMESTAMP" == "true" ]] && DATE+=" "
+         LEVEL+=" "
+         LOG="${DATE}${LEVEL}${MESSAGE}"
+    elif [[ "$LOG_FORMAT" == "json" ]]; then
+        # escape double quote
+        LEVEL=${LEVEL//\"/\\\"}
+        DATE=${DATE//\"/\\\"}
+        MESSAGE=${MESSAGE//\"/\\\"}
+        LOG="{\"level\": \"${LEVEL}\", \"timestamp\": \"${DATE}\", \"message\": \"${MESSAGE}\"$JSON}"
+    fi
+    # output error and debug log to stderr
+    case "$caller" in
+        "core::log::crit")
+            [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
+            [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
+            ;;
+        "core::log::error")
+            [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
+            [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
+            ;;
+        "core::log::stderr")
+            # for ERR trap
+            __core::log::stderr__ "${CORE_LOG_COLOR_STDERR}" "$LOG"
+            ;;
+        "core::log::sig_error")
+            __core::log::stderr__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
+            ;;
+        "core::log::warn")
+            [[ "${CORE_LOG_IO_WARN}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_WARN}" "$LOG"
+            [[ "${CORE_LOG_IO_WARN}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_WARN}" "$LOG"
+            ;;
+        "core::log::notice")
+            [[ "${CORE_LOG_IO_NOTICE}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_NOTICE}" "$LOG"
+            [[ "${CORE_LOG_IO_NOTICE}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_NOTICE}" "$LOG"
+            ;;
+        "core::log::info")
+            [[ "${CORE_LOG_IO_INFO}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_INFO}" "$LOG"
+            [[ "${CORE_LOG_IO_INFO}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_INFO}" "$LOG"
+            ;;
+        "core::log::debug")
+            [[ "${CORE_LOG_IO_DEBUG}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_DEBUG}" "$LOG"
+            [[ "${CORE_LOG_IO_DEBUG}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_DEBUG}" "$LOG"
+            ;;
+        "__core::log::read_stderr__")
+            __core::log::stderr__ "${CORE_LOG_COLOR_STDERR}" "$LOG"
+            ;;
+        "core::log::stack_trace")
+            caller2="${FUNCNAME[2]}"
+            case "$caller2" in
+                "core::log::crit")
+                    [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
+                    [[ "${CORE_LOG_IO_CRIT}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_CRIT}" "$LOG"
+                    ;;
+                "core::log::error")
+                    [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
+                    [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
+                    ;;
+                "core::log::sig_error")
+                    [[ "${CORE_LOG_IO_SIGERR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
+                    [[ "${CORE_LOG_IO_SIGERR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
+                    ;;
+                *)
+                    [[ "${CORE_LOG_IO_TRACE}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_TRACE}" "$LOG"
+                    [[ "${CORE_LOG_IO_TRACE}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_TRACE}" "$LOG"
+                    ;;
+            esac
+            ;;
+        *)
+            core::log::crit "Unknown caller: $caller"
+            ;;
+    esac
+
     return 0
 }
 
