@@ -18,7 +18,7 @@ Wrapper function for executing specified function or command. It can assign stdo
 
 * **--stdout \<string\>**
 
-  Variable name to assign stdout. If it is not specified, messages output to stdout. (option)
+  Variable name to assign stdout. If it is not specified, messages output to stdout. (option) DEFAULT: empty
 
 * **-o \<string\>**
 
@@ -26,7 +26,7 @@ Wrapper function for executing specified function or command. It can assign stdo
 
 * **--stdout \<string\>**
 
-  Variable name to assign stderr. If it is not specified, messages output to stderr. (option)
+  Variable name to assign stderr. If it is not specified, messages output to stderr. (option) DEFAULT: empty
 
 * **-e \<string\>**
 

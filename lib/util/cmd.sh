@@ -14,9 +14,9 @@ nb::check_bash_min_version "4.3.0" \
 
 # @description Wrapper function for executing specified function or command. It can assign stdout/stderr output to separate variables.
 #
-# @option --stdout <string> Variable name to assign stdout. If it is not specified, messages output to stdout. (option)
+# @option --stdout <string> Variable name to assign stdout. If it is not specified, messages output to stdout. (option) DEFAULT: empty
 # @option -o <string> Alias for --stdout
-# @option --stdout <string> Variable name to assign stderr. If it is not specified, messages output to stderr. (option)
+# @option --stdout <string> Variable name to assign stderr. If it is not specified, messages output to stderr. (option) DEFAULT: empty
 # @option -e <string> Alias for --stderr
 # @option --catch-sigerr <true/false> False means drop SIGERR log (optional) DEFAULT:``$LOG_SIGERR`` (variable of core/log.sh library)
 # @option -s <string> Alias for --catch-sigerr
