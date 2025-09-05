@@ -222,10 +222,10 @@ util::cmd::exec() {
     __UTIL_CMD_STDOUT_RESULT__="$__UTIL_CMD_EXEC_STDOUT_MSG__"
 
     if [[ -z "${ARGS[STDOUT]}" ]] && [[ -n "$__UTIL_CMD_STDOUT_RESULT__" ]]; then
-        echo $__UTIL_CMD_STDOUT_RESULT__
+        echo -e "$__UTIL_CMD_STDOUT_RESULT__"
     fi
     if [[ -z "${ARGS[STDERR]}" ]] && [[ -n "$__UTIL_CMD_STDERR_RESULT__" ]]; then
-        echo $__UTIL_CMD_STDERR_RESULT__ >&2
+        echo -e "$__UTIL_CMD_STDERR_RESULT__" >&2
     fi
 
     return $__UTIL_CMD_EXEC_RETURN_CODE__
