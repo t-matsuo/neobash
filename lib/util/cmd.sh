@@ -43,12 +43,15 @@ util::cmd::exec() {
     local __UTIL_CMD_EXEC_TIMEDOUT_COUNTER__=0
     local __UTIL_CMD_EXEC_GRACE_COUNTER__=0
     local __UTIL_CMD_EXEC_ISSUED_SIGNAL__=""
+    local __UTIL_CMD_EXEC_YN__=""
 
     core::arg::init_local
     arg::add_option       -l "STDOUT" -o "--stdout" -t "string" -r "false" -d "" -h "Stdout Variable"
     arg::add_option_alias -l "STDOUT" -o "-o"
     arg::add_option       -l "STDERR" -o "--stderr" -t "string" -r "false" -d "" -h "Stderr Variable"
     arg::add_option_alias -l "STDERR" -o "-e"
+    arg::add_option       -l "ASK"    -o "--ask-on-fail" -t "bool" -r "false" -d "false" -h "Ask retry on fail."
+    arg::add_option_alias -l "ASK"    -o "-a"
     arg::add_option       -l "CATCH_SIGERR"   -o "--catch-sigerr" -t "bool" -r "false" -d "$LOG_SIGERR" -h "Catch SIGERR and output it"
     arg::add_option_alias -l "CATCH_SIGERR"   -o "-s"
     arg::add_option       -l "CLEAR_ENV"      -o "--clear-env"    -t "bool" -r "false" -d "false" -h "Clear all environment variables using env -i"
@@ -205,11 +208,29 @@ util::cmd::exec() {
 
         # break if command/function return 0
         [[ $__UTIL_CMD_EXEC_RETURN_CODE__ -eq 0 ]] && break
-        # break when reaching max retry count
-        [[ $__UTIL_CMD_EXEC_RETRY_COUNT__ -ge ${ARGS[RETRY_COUNT]} ]] && break
 
-        __UTIL_CMD_EXEC_RETRY_COUNT__=$(( __UTIL_CMD_EXEC_RETRY_COUNT__ + 1 ))
-        core::log::warn  "Command failed with rc=$__UTIL_CMD_EXEC_RETURN_CODE__. retrying [$__UTIL_CMD_EXEC_RETRY_COUNT__/${ARGS[RETRY_COUNT]}]..."
+        if [[ $__UTIL_CMD_EXEC_RETRY_COUNT__ -ge ${ARGS[RETRY_COUNT]} ]]; then
+            if [[ "${ARGS[ASK]}" == "false" ]]; then
+                # break when reaching max retry count
+                break
+            else
+                # check tty
+                if [[ ! -t 0 ]]; then
+                    core::log::warn "--ask-on-fail option is specified, but tty not found"
+                    break
+                fi
+                core::log::warn  "Command failed with rc=$__UTIL_CMD_EXEC_RETURN_CODE__. Retry? Y/n"
+                read __UTIL_CMD_EXEC_YN__ </dev/tty
+                if [[ -n "$__UTIL_CMD_EXEC_YN__" ]] && [[ "$__UTIL_CMD_EXEC_YN__" != "y" ]] && [[ "$__UTIL_CMD_EXEC_YN__" != "Y" ]]; then
+                    break
+                fi
+                # reset retry count
+                __UTIL_CMD_EXEC_RETRY_COUNT__=0
+            fi
+        else
+            core::log::warn  "Command failed with rc=$__UTIL_CMD_EXEC_RETURN_CODE__. retrying [$__UTIL_CMD_EXEC_RETRY_COUNT__/${ARGS[RETRY_COUNT]}]..."
+            __UTIL_CMD_EXEC_RETRY_COUNT__=$(( __UTIL_CMD_EXEC_RETRY_COUNT__ + 1 ))
+        fi
         core::log::debug "Dropped stdout=\"${__UTIL_CMD_EXEC_STDOUT_MSG__:-}\" / stderr=\"${__UTIL_CMD_EXEC_ERR_MSG__:-}\""
         sleep ${ARGS[RETRY_INTERVAL]}
     done

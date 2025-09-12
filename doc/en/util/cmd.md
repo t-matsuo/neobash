@@ -32,6 +32,14 @@ Wrapper function for executing specified function or command. It can assign stdo
 
   Alias for --stderr
 
+* **--ask-on-fail \<bool\>**
+
+  Ask retry on fail. (option) DEFAULT: false
+
+* **-a \<string\>**
+
+  Alias for --ask-on-fail
+
 * **--catch-sigerr \<true/false\>**
 
   False means drop SIGERR log (optional) DEFAULT:``$LOG_SIGERR`` (variable of core/log.sh library)
@@ -55,6 +63,22 @@ Wrapper function for executing specified function or command. It can assign stdo
 * **-t \<int\>**
 
   Alias for --timeout
+
+* **--retry \<int\>**
+
+  Retry count. DEFAULT:``0``
+
+* **-r \<int\>**
+
+  Alias for --retry
+
+* **--interval \<int\>**
+
+  Retry interval time (sec). DEFAULT:``1``
+
+* **-i \<int\>**
+
+  Alias for --interval
 
 * **--grace-period \<int\>**
 
