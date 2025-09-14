@@ -19,12 +19,18 @@ nb::check_bash_min_version "4.3.0" \
 # @option -o <string> Alias for --stdout
 # @option --stdout <string> Variable name to assign stderr. If it is not specified, messages output to stderr. (option) DEFAULT: empty
 # @option -e <string> Alias for --stderr
+# @option --ask-on-fail <bool> Ask retry on fail. (option) DEFAULT: false
+# @option -a <string> Alias for --ask-on-fail
 # @option --catch-sigerr <true/false> False means drop SIGERR log (optional) DEFAULT:``$LOG_SIGERR`` (variable of core/log.sh library)
 # @option -s <string> Alias for --catch-sigerr
 # @option --clear-env <true/false> True means clearing all environment varialbes when executing command. you cannot use true when executing function. (optional) DEFAULT:``false``
 # @option -c <string> Alias for --clear-env
 # @option --timeout <int> Timeout(sec). 0 means no timeout. DEFAULT:``600.``
 # @option -t <int> Alias for --timeout
+# @option --retry <int> Retry count. DEFAULT:``0``
+# @option -r <int> Alias for --retry
+# @option --interval <int> Retry interval time (sec). DEFAULT:``1``
+# @option -i <int> Alias for --interval
 # @option --grace-period <int> Grace period for timed out (TERM->KILL) (sec). DEFAULT:``1``
 # @option -g <int> Alias for --grace-period
 # @stdout None.
