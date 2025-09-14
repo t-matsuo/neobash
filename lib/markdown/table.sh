@@ -4,6 +4,13 @@
 
 nb::require "core/log.sh core/arg.sh"
 
+# @description Convert csv to markdown table
+#
+# @option --header <string> table header csv (required)
+# @option --data <string> table data csv (required)
+# @stdout table
+# @stderr None
+# @exitcode 0
 markdown::csv2table() {
     local RES=""
     local HEADER=""
