@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Copyright 2025 MATSUO Takatoshi (matsuo.tak@gmail.com)
 # Released under the MIT licence: http://opensource.org/licenses/mit-license
+# shellcheck disable=SC2031,SC2030
 #
 # @file util/cmd.sh
 # @brief Neobash util/cmd.sh library
@@ -232,7 +233,7 @@ util::cmd::exec() {
             __UTIL_CMD_EXEC_RETRY_COUNT__=$(( __UTIL_CMD_EXEC_RETRY_COUNT__ + 1 ))
         fi
         core::log::debug "Dropped stdout=\"${__UTIL_CMD_EXEC_STDOUT_MSG__:-}\" / stderr=\"${__UTIL_CMD_EXEC_ERR_MSG__:-}\""
-        sleep ${ARGS[RETRY_INTERVAL]}
+        sleep "${ARGS[RETRY_INTERVAL]}"
     done
 
     core::log::debug "stderr=$__UTIL_CMD_EXEC_ERR_MSG__"
