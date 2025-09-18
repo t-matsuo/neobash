@@ -64,3 +64,20 @@ test_os::check_func_ng_noerror() {
     assert_empty "$OUTPUT"
 }
 
+test_os::check_exported_var_ok() {
+    local OUTPUT
+
+    export __CHECK_ENV_TEST__=""
+    OUTPUT=$( os::check_exported_var --name __CHECK_ENV_TEST__ {core_log_saved_stderr}>&1 )
+    assert_exit_code "0"
+    assert_empty "$OUTPUT"
+}
+
+test_os::check_export_var_ng() {
+    local OUTPUT
+
+    __CHECK_ENV_TEST__=""
+    OUTPUT=$( os::check_exported_var --name __CHECK_ENV_TEST__ {core_log_saved_stderr}>&1 )
+    assert_exit_code "1"
+    assert_matches 'variable __CHECK_ENV_TEST__ is not exported' "$OUTPUT"
+}

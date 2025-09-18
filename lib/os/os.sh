@@ -7,6 +7,7 @@
 # @description
 # * library about os
 
+nb::import "string/string.sh"
 nb::require "core/log.sh core/arg.sh"
 
 # @description check if the variable is defined or not
@@ -34,6 +35,35 @@ os::check_var() {
     [[ -v "${ARGS[NAME]}" ]] && return 0
 
     [[ "${ARGS[ENABLE_ERROR]}" == true ]] && core::log::error "variable ${ARGS[NAME]} is not defined"
+    [[ "${ARGS[EXIT]}" == "true" ]] && exit 1
+    return 1
+}
+
+# @description check if the variable is exported or not
+#
+# @option --name <string> Variable name to assign stdout. If it is not specified, messages output to stdout. (required)
+# @option -n <string> Alias for --name
+# @option --enable-error <bool> If true, enable error message when the variable is not defined. (option) DEFAULT:``true``
+# @option -r <bool> Alias for --enable-error
+# @option --exit <bool> If true, exit 1 instead of return 1, when the variable is not defined. (option) DEFAULT:``false``
+# @option -e <bool> Alias for --exit
+# @stdout None.
+# @stderr Error message if the variable is not exported and --enable-error is true.
+# @exitcode 0 The variable is exported.
+# @exitcode 1 The variable is not exported.
+os::check_exported_var() {
+    core::arg::init_local
+    arg::add_option       -l "NAME" -o "--name" -t "string" -r "true" -h "Variable name"
+    arg::add_option_alias -l "NAME" -o "-n"
+    arg::add_option       -l "ENABLE_ERROR" -o "--enable-error" -t "bool" -r "false" -d "true" -h "if true, enable error message when the variable is not exported"
+    arg::add_option_alias -l "ENABLE_ERROR" -o "-r"
+    arg::add_option       -l "EXIT" -o "--exit" -t "bool" -r "false" -d "false" -h "if true, exit when the variable is not defined"
+    arg::add_option_alias -l "EXIT" -o "-e"
+    core::arg::parse "$@"
+
+    string::start_with --string "$( declare -p ${ARGS[NAME]} )" --match "declare -x" && return 0
+
+    [[ "${ARGS[ENABLE_ERROR]}" == true ]] && core::log::error "variable ${ARGS[NAME]} is not exported"
     [[ "${ARGS[EXIT]}" == "true" ]] && exit 1
     return 1
 }
@@ -68,4 +98,3 @@ os::check_func() {
     [[ "${ARGS[EXIT]}" == "true" ]] && exit 1
     return 1
 }
-
