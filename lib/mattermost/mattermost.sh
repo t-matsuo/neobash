@@ -9,7 +9,7 @@
 #
 # This library can change its behavior by setting the following environment variables.
 #
-# * MATTERMOST_POST : if false, log message instead of post in mattermost::post(). default: ``true``
+# * MATTERMOST_POST : if false, it outputs logs only instead of calling api such as post, upload and so on. default: ``true``
 
 nb::require "core/log.sh core/arg.sh"
 nb::import "curl/curl.sh"
@@ -75,7 +75,7 @@ mattermost::ping() {
 # @option --verbose (optional): Verbose log.
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
-mattermost::post() {
+mattermost::webhook_post() {
     local MESSAGE
     local ESCAPED_MESSAGE
     local API_URL
@@ -86,7 +86,7 @@ mattermost::post() {
     core::arg::init_local
     core::arg::add_option -l "MESSAGE" -o "--message" -r "true" -h "post message"
     core::arg::add_option_alias -l "MESSAGE" -a "-m"
-    core::arg::add_option -l "API_URL" -o "--url" -r "true" -h "mattermost api url"
+    core::arg::add_option -l "API_URL" -o "--url" -r "true" -h "webhook api url"
     core::arg::add_option_alias -l "API_URL" -a "-u"
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
     core::arg::add_option -l "VERBOSE" -o "--verbose" -r "false" -t "bool" -s "true" -h "verbose curl log"
