@@ -8,12 +8,14 @@ Useful functions for using mattermost.
 
 This library can change its behavior by setting the following environment variables.
 
-* MATTERMOST_POST : if false, log message instead of post in mattermost::post(). default: ``true``
+* MATTERMOST_POST : if false, it outputs logs only instead of calling api such as post, upload and so on. default: ``true``
 
 ## Index
 
 * [mattermost::ping](#mattermostping)
-* [mattermost::post](#mattermostpost)
+* [mattermost::webhook_post](#mattermostwebhookpost)
+* [mattermost::post_msg](#mattermostpostmsg)
+* [mattermost::upload_file](#mattermostuploadfile)
 
 ### mattermost::ping
 
@@ -46,7 +48,7 @@ Ping mattermost api using /api/v4/system/ping endpoint.
 
 * Error and debug message.
 
-### mattermost::post
+### mattermost::webhook_post
 
 Post a message to mattermost using incoming webhook.
 
@@ -76,6 +78,92 @@ Post a message to mattermost using incoming webhook.
 #### Output on stdout
 
 * Show a post message if MATTERMOST_POST=false.
+
+#### Output on stderr
+
+* Error and debug message.
+
+### mattermost::post_msg
+
+post message
+
+#### Options
+
+* **--message \<vahlue\>**
+
+  (string)(required): Message.
+
+* **--token \<token\>**
+
+  (string)(required): token.
+
+* **--host \<value\>**
+
+  (string)(required): Mattermost URL such as https://localhost:8065
+
+* **--ch \<value\>**
+
+  (string)(required): Mattermost channel ID
+
+* **--insecure**
+
+  (optional): Ignore certificate errors.
+
+* **--verbose**
+
+  (optional): Verbose log.
+
+#### Exit codes
+
+* **0**: If successfull.
+* **1**: If failed.
+
+#### Output on stdout
+
+* API response (json)
+
+#### Output on stderr
+
+* Error and debug message.
+
+### mattermost::upload_file
+
+Upload a file to mattermost using token. NOTE: Incoming webhook does not support uploading.
+
+#### Options
+
+* **--file \<file\>**
+
+  (string)(required): file.
+
+* **--token \<token\>**
+
+  (string)(required): token.
+
+* **--host \<value\>**
+
+  (string)(required): Mattermost URL such as https://localhost:8065
+
+* **--ch \<value\>**
+
+  (string)(required): Mattermost channel ID
+
+* **--insecure**
+
+  (optional): Ignore certificate errors.
+
+* **--verbose**
+
+  (optional): Verbose log.
+
+#### Exit codes
+
+* **0**: If successfull.
+* **1**: If failed.
+
+#### Output on stdout
+
+* API response (json)
 
 #### Output on stderr
 
