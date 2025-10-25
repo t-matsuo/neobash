@@ -188,7 +188,7 @@ mattermost::post_msg() {
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
     curl::enable_fail
     if [[ "${MATTERMOST_POST}" == "true" ]]; then
-        util::cmd::exec --stdout STDOUT --stderr STDERR -- curl::post_json $CURL_OPTIONS \
+        util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::post_json $CURL_OPTIONS \
             --header "Accept: application/json" \
             --header "Authorization: Bearer ${ARGS[TOKEN]}" \
             --data "$POST_DATA" \
@@ -240,7 +240,7 @@ mattermost::upload_file() {
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
     curl::enable_fail
     if [[ "${MATTERMOST_POST}" == "true" ]]; then
-        util::cmd::exec --stdout STDOUT --stderr STDERR -- curl::post $CURL_OPTIONS \
+        util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::post $CURL_OPTIONS \
             --header "Accept: application/json" \
             --header "Authorization: Bearer ${ARGS[TOKEN]}" \
             --header "Content-Type: multipart/form-data" \
