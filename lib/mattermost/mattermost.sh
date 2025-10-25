@@ -235,6 +235,7 @@ mattermost::upload_file() {
 
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
     [[ "${ARGS[VERBOSE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --verbose"
+    [[ ! -f "${ARGS[FILE]}" ]] && log::error "${ARGS[FILE]} file not found" && return 1
 
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
     curl::enable_fail
