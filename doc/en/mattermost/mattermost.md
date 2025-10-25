@@ -12,21 +12,11 @@ This library can change its behavior by setting the following environment variab
 
 ## Index
 
-* [__mattermost::check_host__](#mattermostcheckhost)
-* [__mattermost::escape_message__](#mattermostescapemessage)
 * [mattermost::ping](#mattermostping)
 * [mattermost::webhook_post](#mattermostwebhookpost)
 * [mattermost::post_msg](#mattermostpostmsg)
 * [mattermost::upload_file](#mattermostuploadfile)
 * [mattermost::post_msg_with_file](#mattermostpostmsgwithfile)
-
-### __mattermost::check_host__
-
-check mattermost hostname and strip last "/"
-
-### __mattermost::escape_message__
-
-escape message
 
 ### mattermost::ping
 
