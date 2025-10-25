@@ -56,7 +56,6 @@ __mattermost::escape_message__() {
 # @stderr Error and debug message.
 # @option --host <value> (string)(required): Mattermost URL such as https://localhost:8065
 # @option --insecure (optional): Ignore certificate errors.
-# @option --verbose (optional): Verbose log.
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::ping() {
@@ -94,7 +93,6 @@ mattermost::ping() {
 # @option --message / -m <vahlue> (string)(required): Message.
 # @option --url / -u <value> (string)(required): Incoming webhook URL.
 # @option --insecure (optional): Ignore certificate errors.
-# @option --verbose (optional): Verbose log.
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::webhook_post() {
@@ -144,7 +142,6 @@ mattermost::webhook_post() {
 # @option --host <value> (string)(required): Mattermost URL such as https://localhost:8065
 # @option --ch <value> (string)(required): Mattermost channel ID
 # @option --insecure (optional): Ignore certificate errors.
-# @option --verbose (optional): Verbose log.
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::post_msg() {
@@ -224,7 +221,6 @@ mattermost::post_msg() {
 # @option --host <value> (string)(required): Mattermost URL such as https://localhost:8065
 # @option --ch <value> (string)(required): Mattermost channel ID
 # @option --insecure (optional): Ignore certificate errors.
-# @option --verbose (optional): Verbose log.
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::upload_file() {
