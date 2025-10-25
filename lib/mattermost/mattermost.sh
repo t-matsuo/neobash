@@ -280,12 +280,12 @@ mattermost::upload_file() {
 # @option --host <value> (string)(required): Mattermost URL such as https://localhost:8065
 # @option --ch <value> (string)(required): Mattermost channel ID
 # @option --insecure (optional): Ignore certificate errors.
-# @option --verbose (optional): Verbose log.
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::post_msg_with_file() {
     local RES=""
     local FID=""
+    local INSECURE_OPTION=""
 
     core::arg::init_local
     core::arg::add_option -l "MESSAGE" -o "--message" -r "true" -h "post message"
@@ -296,7 +296,9 @@ mattermost::post_msg_with_file() {
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
     core::arg::parse "$@"
 
-    RES=$( mattermost::upload_file --file "${ARGS[FILE]}" --host "${ARGS[HOST]}" --token "${ARGS[TOKEN]}" --ch "${ARGS[CH]}" --insecure "${ARGS[INSECURE]}" ) || return 1
+    [[ "${ARGS[INSECURE]}" == "true" ]] && INSECURE_OPTION="--insecure"
+
+    RES=$( mattermost::upload_file --file "${ARGS[FILE]}" --host "${ARGS[HOST]}" --token "${ARGS[TOKEN]}" --ch "${ARGS[CH]}" "$INSECURE_OPTION" ) || return 1
     if ! FID=$( echo "$RES" | jq -r '.file_infos[0].id' ); then
         log::error "cannot parse json response"
         return 1
@@ -305,7 +307,7 @@ mattermost::post_msg_with_file() {
         log::error "cannot extract file ID (ID=null)"
         return 1
     fi
-    mattermost::post_msg --message "${ARGS[MESSAGE]}" --host "${ARGS[HOST]}" --token "${ARGS[TOKEN]}" --ch "${ARGS[CH]}" --insecure "${ARGS[INSECURE]}" --files "$FID" || return 1
+    mattermost::post_msg --message "${ARGS[MESSAGE]}" --host "${ARGS[HOST]}" --token "${ARGS[TOKEN]}" --ch "${ARGS[CH]}" "$INSECURE_OPTION" --files "$FID" || return 1
     return 0
 }
 
