@@ -218,7 +218,6 @@ mattermost::post_msg() {
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::upload_file() {
-    local FILE
     local -r API_PATH="api/v4/files"
     local CURL_OPTIONS=""
     local curl_rc=""
@@ -234,7 +233,6 @@ mattermost::upload_file() {
     core::arg::add_option -l "VERBOSE" -o "--verbose" -r "false" -t "bool" -s "true" -h "verbose curl log"
     core::arg::parse "$@"
 
-    FILE="${ARGS[FILE]}"
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
     [[ "${ARGS[VERBOSE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --verbose"
 
