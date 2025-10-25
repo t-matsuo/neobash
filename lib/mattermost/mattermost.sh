@@ -190,10 +190,10 @@ mattermost::post_msg() {
             ${ARGS[HOST]}/${API_PATH}
         curl_rc=$?
         if [[ $curl_rc -ne 0 ]]; then
-            core::log::error "post message failed rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\" CURL_ERROR_LOG=\"$STDERR\""
+            core::log::error "post message failed rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
             return 1
         fi
-        core::log::debug "post message successed: rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\" CURL_ERROR_LOG=\"$STDERR\""
+        core::log::debug "post message successed: rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         echo "$STDOUT"
     else
         core::log::info "post message skipped: channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\""
@@ -242,10 +242,10 @@ mattermost::upload_file() {
             ${ARGS[HOST]}/${API_PATH}
         curl_rc=$?
         if [[ $curl_rc -ne 0 ]]; then
-            core::log::error "file uploading failed rc=$curl_rc channel_id=${ARGS[CH]} file=${ARGS[FILE]} CURL_ERROR_LOG=\"$STDERR\""
+            core::log::error "file uploading failed rc=$curl_rc channel_id=${ARGS[CH]} file=${ARGS[FILE]} RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
             return 1
         fi
-        core::log::debug "file uploadig successed: rc=$curl_rc channel_id=${ARGS[CH]} file=${ARGS[FILE]} CURL_ERROR_LOG=\"$STDERR\""
+        core::log::debug "file uploadig successed: rc=$curl_rc channel_id=${ARGS[CH]} file=${ARGS[FILE]} RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         echo "$STDOUT"
     else
         core::log::info "uploading is skipped: channel_id=${ARGS[CH]} file=${ARGS[FILE]}"
