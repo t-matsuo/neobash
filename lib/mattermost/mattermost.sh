@@ -18,6 +18,39 @@ nb::command_check "curl"
 
 MATTERMOST_POST="true"
 
+# @description check mattermost hostname and strip last "/"
+__mattermost::check_host__() {
+    local HOST=""
+    core::arg::init_local
+    core::arg::add_option -l "HOST" -o "--host" -r "true" -h "mattermost host such as https://localhost:8065"
+    core::arg::parse "$@"
+
+    HOST="${ARGS[HOST]}"
+    if [[ ! "$HOST" =~ ^https?://[.a-zA-Z0-9:]+/?$ ]]; then
+        core::log::error "Invalid mattermost hostname: $HOST"
+        return 1
+    fi
+    HOST="${HOST%/}"
+    echo "$HOST"
+    return 0
+}
+
+# @description escape message
+__mattermost::escape_message__() {
+    local MESSAGE=""
+    core::arg::init_local
+    core::arg::add_option -l "MESSAGE" -o "--message" -r "true" -h "message"
+    core::arg::parse "$@"
+
+    MESSAGE="${ARGS[MESSAGE]}"
+    # escape double quote
+    MESSAGE="${MESSAGE//\"/\\\"}"
+    # remove control characters
+    MESSAGE="${MESSAGE//[]/}"
+    echo "$MESSAGE"
+    return 0
+}
+
 # @description Ping mattermost api using /api/v4/system/ping endpoint.
 # @stdout None
 # @stderr Error and debug message.
@@ -27,12 +60,12 @@ MATTERMOST_POST="true"
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::ping() {
-    local -r PING_PATH="api/v4/system/ping"
-    local HOST
-    local URL
+    local -r API_PATH="api/v4/system/ping"
+    local HOST=""
     local CURL_OPTIONS=""
-    local CURL_LOG
-    local curl_rc
+    local curl_rc=""
+    local STDOUT=""
+    local STDERR=""
 
     core::arg::init_local
     core::arg::add_option -l "HOST" -o "--host" -r "true" -h "mattermost host such as https://localhost:8065"
@@ -41,32 +74,22 @@ mattermost::ping() {
 
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
 
-    HOST="${ARGS[HOST]}"
-    if [[ ! "$HOST" =~ ^https?://[.a-zA-Z0-9:]+/?$ ]]; then
-        core::log::error "Invalid mattermost hostname: $HOST"
-        return 1
-    fi
-    HOST="${HOST%/}"
-    URL="${HOST}/${PING_PATH}"
-    core::log::debug "Mattermost ping URL: ${URL}"
+    HOST="$( __mattermost::check_host__ --host "${ARGS[HOST]}" )" || return 1
+    core::log::debug "Mattermost ping URL: ${HOST}/${API_PATH}"
 
     curl::enable_fail
-    CURL_LOG=$( curl::get $CURL_OPTIONS -s "${URL}" 2>&1)
+    util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::get $CURL_OPTIONS -s "${HOST}/${API_PATH}"
     curl_rc=$?
-    if [[ $curl_rc -ne 0 ]]; then
-        core::log::error "mattermost ping failed rc=$curl_rc CURL_LOG=\"$CURL_LOG\""
-        return 1
-    fi
-    if [[ "$CURL_LOG" =~ \"status\":\"OK\" ]]; then
-        core::log::debug "mattermost ping succeeded. CURL_LOG=\"$CURL_LOG\""
+    if [[ "$STDOUT" =~ \"status\":\"OK\" ]]; then
+        core::log::debug "mattermost ping successed rc=$curl_rc RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         return 0
     fi
-    core::log::error "mattermost ping failed rc=$curl_rc CURL_LOG=\"$CURL_LOG\""
+    core::log::error "mattermost ping failed rc=$curl_rc RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
     return 1
 }
 
 # @description Post a message to mattermost using incoming webhook.
-# @stdout Show a post message if MATTERMOST_POST=false.
+# @stdout API response (json)
 # @stderr Error and debug message.
 # @option --message / -m <vahlue> (string)(required): Message.
 # @option --url / -u <value> (string)(required): Incoming webhook URL.
@@ -75,12 +98,11 @@ mattermost::ping() {
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::webhook_post() {
-    local MESSAGE
-    local ESCAPED_MESSAGE
-    local API_URL
+    local MESSAGE=""
     local CURL_OPTIONS=""
-    local CURL_LOG
-    local curl_rc
+    local curl_rc=""
+    local STDOUT=""
+    local STDERR=""
 
     core::arg::init_local
     core::arg::add_option -l "MESSAGE" -o "--message" -r "true" -h "post message"
@@ -89,33 +111,29 @@ mattermost::webhook_post() {
     core::arg::add_option_alias -l "API_URL" -a "-u"
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
     core::arg::parse "$@"
-    MESSAGE=$( core::arg::get_value -l "MESSAGE" )
-    API_URL=$( core::arg::get_value -l "API_URL" )
 
-    [[ "$MESSAGE" == "" ]] && log::error "post message is empty" && return 1
-    [[ "$API_URL" == "" ]] && log::error "incoming webhook URL is empty" && return 1
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
+    [[ "${ARGS[API_URL]}" == "" ]] && log::error "incoming webhook URL is empty" && return 1
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
 
-    # escape double quote
-    ESCAPED_MESSAGE="${MESSAGE//\"/\\\"}"
-
-    # remove control characters
-    ESCAPED_MESSAGE="${ESCAPED_MESSAGE//[]/}"
+    MESSAGE="$( __mattermost::escape_message__ --message "${ARGS[MESSAGE]}" )"
 
     curl::enable_fail
     if [[ "${MATTERMOST_POST}" == "true" ]]; then
-        CURL_LOG=$( curl::post_json $CURL_OPTIONS -s \
-                        -d '{"text": "'"$ESCAPED_MESSAGE"'"}' "${API_URL}" 2>&1)
+        util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::post_json $CURL_OPTIONS \
+            -d '{"text": "'"$MESSAGE"'"}' "${ARGS[API_URL]}"
         curl_rc=$?
+
         if [[ $curl_rc -ne 0 ]]; then
-            core::log::error "mattermost post failed rc=$curl_rc POST_MESSAGE=\"$ESCAPED_MESSAGE\" CURL_LOG=\"$CURL_LOG\""
+            core::log::error "post message failed rc=$curl_rc msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
             return 1
         fi
-        core::log::debug "mattermost post successed: rc=$curl_rc POST_MESSAGE=\"$ESCAPED_MESSAGE\" CURL_LOG=\"$CURL_LOG\""
+        core::log::debug "post message successed: rc=$curl_rc msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+        echo "$STDOUT"
     else
-        core::log::info "mattermost post skipped: POST_MESSAGE=\"$ESCAPED_MESSAGE\""
+        core::log::info "post message skipped: channel_id=${ARGS[CH]} msg=\"$MESSAGE\""
     fi
+    return 0
 }
 
 # @description post message
@@ -130,16 +148,16 @@ mattermost::webhook_post() {
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
 mattermost::post_msg() {
-    local MESSAGE=""
-    local ESCAPED_MESSAGE=""
     local -r API_PATH="api/v4/posts"
+    local HOST=""
     local CURL_OPTIONS=""
     local curl_rc=""
     local STDOUT=""
     local STDERR=""
+    local MESSAGE=""
     local POST_DATA=""
     local POST_DATA_FOR_FILES=""
-    local file_id=""
+    local file_ids=""
 
     core::arg::init_local
     core::arg::add_option -l "MESSAGE" -o "--message" -r "true" -h "post message"
@@ -153,13 +171,10 @@ mattermost::post_msg() {
     MESSAGE="${ARGS[MESSAGE]}"
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
 
-    # escape double quote
-    ESCAPED_MESSAGE="${MESSAGE//\"/\\\"}"
+    HOST="$( __mattermost::check_host__ --host "${ARGS[HOST]}" )" || return 1
+    MESSAGE="$( __mattermost::escape_message__  --message "${ARGS[MESSAGE]}" )" || return 1
 
-    # remove control characters
-    ESCAPED_MESSAGE="${ESCAPED_MESSAGE//[]/}"
-
-    # custructing file_ids value
+    # custructing file_ids array
     if [[ -z "${ARGS[FILE_IDS]}" ]]; then
         POST_DATA_FOR_FILES="\"\""
     else
@@ -172,7 +187,7 @@ mattermost::post_msg() {
 
     POST_DATA='{
       "channel_id": "'"${ARGS[CH]}"'",
-      "message": "'"$ESCAPED_MESSAGE"'",
+      "message": "'"$MESSAGE"'",
       "file_ids": [
         '"$POST_DATA_FOR_FILES"'
       ]
@@ -187,16 +202,16 @@ mattermost::post_msg() {
             --header "Accept: application/json" \
             --header "Authorization: Bearer ${ARGS[TOKEN]}" \
             --data "$POST_DATA" \
-            ${ARGS[HOST]}/${API_PATH}
+            ${HOST}/${API_PATH}
         curl_rc=$?
         if [[ $curl_rc -ne 0 ]]; then
-            core::log::error "post message failed rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+            core::log::error "post message failed rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
             return 1
         fi
-        core::log::debug "post message successed: rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+        core::log::debug "post message successed: rc=$curl_rc channel_id=${ARGS[CH]} msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         echo "$STDOUT"
     else
-        core::log::info "post message skipped: channel_id=${ARGS[CH]} msg=\"$ESCAPED_MESSAGE\""
+        core::log::info "post message skipped: channel_id=${ARGS[CH]} msg=\"$MESSAGE\""
     fi
     return 0
 }
@@ -214,6 +229,7 @@ mattermost::post_msg() {
 # @exitcode 1 If failed.
 mattermost::upload_file() {
     local -r API_PATH="api/v4/files"
+    local HOST=""
     local CURL_OPTIONS=""
     local curl_rc=""
     local STDOUT=""
@@ -230,6 +246,8 @@ mattermost::upload_file() {
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
     [[ ! -f "${ARGS[FILE]}" ]] && log::error "${ARGS[FILE]} file not found" && return 1
 
+    HOST="$( __mattermost::check_host__ --host "${ARGS[HOST]}" )" || return 1
+
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
     curl::enable_fail
     if [[ "${MATTERMOST_POST}" == "true" ]]; then
@@ -239,7 +257,7 @@ mattermost::upload_file() {
             --header "Content-Type: multipart/form-data" \
             -F "channel_id=${ARGS[CH]}" \
             -F "files=@${ARGS[FILE]}" \
-            ${ARGS[HOST]}/${API_PATH}
+            ${HOST}/${API_PATH}
         curl_rc=$?
         if [[ $curl_rc -ne 0 ]]; then
             core::log::error "file uploading failed rc=$curl_rc channel_id=${ARGS[CH]} file=${ARGS[FILE]} RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
