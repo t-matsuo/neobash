@@ -37,7 +37,6 @@ mattermost::ping() {
     core::arg::init_local
     core::arg::add_option -l "HOST" -o "--host" -r "true" -h "mattermost host such as https://localhost:8065"
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
-    core::arg::add_option -l "VERBOSE" -o "--verbose" -r "false" -t "bool" -s "true" -h "verbose curl log"
     core::arg::parse "$@"
 
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
@@ -89,7 +88,6 @@ mattermost::webhook_post() {
     core::arg::add_option -l "API_URL" -o "--url" -r "true" -h "webhook api url"
     core::arg::add_option_alias -l "API_URL" -a "-u"
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
-    core::arg::add_option -l "VERBOSE" -o "--verbose" -r "false" -t "bool" -s "true" -h "verbose curl log"
     core::arg::parse "$@"
     MESSAGE=$( core::arg::get_value -l "MESSAGE" )
     API_URL=$( core::arg::get_value -l "API_URL" )
@@ -97,7 +95,6 @@ mattermost::webhook_post() {
     [[ "$MESSAGE" == "" ]] && log::error "post message is empty" && return 1
     [[ "$API_URL" == "" ]] && log::error "incoming webhook URL is empty" && return 1
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
-    [[ "${ARGS[VERBOSE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --verbose"
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
 
     # escape double quote
@@ -151,12 +148,10 @@ mattermost::post_msg() {
     core::arg::add_option -l "CH" -o "--ch" -r "true" -h "The ID of the channel that this file will be uploaded to"
     core::arg::add_option -l "FILE_IDS" -o "--files" -r "false" -d "" -h "uploaded file IDs. Separator is space."
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
-    core::arg::add_option -l "VERBOSE" -o "--verbose" -r "false" -t "bool" -s "true" -h "verbose curl log"
     core::arg::parse "$@"
 
     MESSAGE="${ARGS[MESSAGE]}"
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
-    [[ "${ARGS[VERBOSE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --verbose"
 
     # escape double quote
     ESCAPED_MESSAGE="${MESSAGE//\"/\\\"}"
@@ -230,11 +225,9 @@ mattermost::upload_file() {
     core::arg::add_option -l "HOST" -o "--host" -r "true" -h "mattermost host such as https://localhost:8065"
     core::arg::add_option -l "CH" -o "--ch" -r "true" -h "The ID of the channel that this file will be uploaded to"
     core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
-    core::arg::add_option -l "VERBOSE" -o "--verbose" -r "false" -t "bool" -s "true" -h "verbose curl log"
     core::arg::parse "$@"
 
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
-    [[ "${ARGS[VERBOSE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --verbose"
     [[ ! -f "${ARGS[FILE]}" ]] && log::error "${ARGS[FILE]} file not found" && return 1
 
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
