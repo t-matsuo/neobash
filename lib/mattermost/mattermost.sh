@@ -47,6 +47,8 @@ __mattermost::escape_message__() {
     MESSAGE="${ARGS[MESSAGE]}"
     # escape double quote
     MESSAGE="${MESSAGE//\"/\\\"}"
+    # replace break
+    MESSAGE="${MESSAGE//$'\n'/\\n}"
     # remove control characters
     MESSAGE="${MESSAGE//[]/}"
     echo "$MESSAGE"
