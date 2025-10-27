@@ -18,6 +18,7 @@ nb::command_check "curl"
 
 MATTERMOST_POST="true"
 
+# @internal
 # @description check mattermost hostname and strip last "/"
 __mattermost::check_host__() {
     local HOST=""
@@ -35,6 +36,7 @@ __mattermost::check_host__() {
     return 0
 }
 
+# @internal
 # @description escape message
 __mattermost::escape_message__() {
     local MESSAGE=""
