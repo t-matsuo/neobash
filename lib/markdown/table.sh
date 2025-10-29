@@ -32,7 +32,8 @@ markdown::csv2table() {
     BORDER="${BORDER% -- }"
 
     while IFS= read -r line; do
-        DATA_TMP="${line//,/ | }"
+        DATA_TMP="${line//|/\\|}"
+        DATA_TMP="${DATA_TMP//,/ | }"
         DATA_TMP="| ${DATA_TMP} |"
         # add newline with $'\n'
         DATA="${DATA}${DATA_TMP}"$'\n'
