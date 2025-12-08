@@ -54,7 +54,7 @@ nb::import() {
             fi
             # cannot use core::log::debug when loading lib/core/log.sh, so skip importing message
             if [[ "$file" == "${NB_DIR}/core/log.sh" ]]; then
-                [[ "${LOG_DEBUG:-}" == "true" ]] && printf "%(%F-%T%z)T " && echo "DEBUG importing library $file" >&2
+                [[ "${LOG_DEBUG:-}" == "true" ]] && printf "%(%F-%T%z)T " >&2 && echo "DEBUG importing library $file" >&2
             else
                 core::log::debug "importing library $libname in $path"
             fi
