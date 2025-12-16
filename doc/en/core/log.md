@@ -156,10 +156,11 @@ Alias is defined as ``log::error_exit``
 #### Arguments
 
 * **$1** (string): log message.
+* **$2** (exit): code. default: ``1``
 
 #### Exit codes
 
-* 1
+* specified exit code (default ``1``)
 
 #### Output on stderr
 

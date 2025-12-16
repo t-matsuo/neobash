@@ -131,10 +131,11 @@ Error ログを出力し、exit します。
 #### 引数
 
 * **$1** (string): ログメッセージ。
+* **$2** (int): exit code
 
 #### Exit codes
 
-* 1
+* 第2引数で指定したexit code. default: ``1``
 
 #### 標準エラー出力
 

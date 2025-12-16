@@ -31,6 +31,11 @@ test_core::log::error_exit() {
   assert_matches "[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} TRACE test_core::log::error_exit()" "$OUTPUT"
 }
 
+test_core::log::error_exit_with_code() {
+  $( core::log::error_exit "error exit log" 2 )
+  assert_exit_code "2"
+}
+
 test_core::log::error() {
   core::log::error "error log"
   assert_exit_code "0"

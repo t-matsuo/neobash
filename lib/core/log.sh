@@ -429,11 +429,12 @@ core::log::error() {
 #
 # Alias is defined as ``log::error_exit``
 # @arg $1 string log message.
+# @arg $2 exit code. default: ``1``
 # @stderr output error log message and stack trace.
-# @exitcode 1
+# @exitcode specified exit code (default ``1``)
 core::log::error_exit() {
     core::log::error "${1:-}"
-    exit 1
+    exit "${2:-1}"
 }
 
 # @internal
