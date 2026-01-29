@@ -27,7 +27,7 @@ __mattermost::check_host__() {
     core::arg::parse "$@"
 
     HOST="${ARGS[HOST]}"
-    if [[ ! "$HOST" =~ ^https?://[.a-zA-Z0-9:]+/?$ ]]; then
+    if [[ ! "$HOST" =~ ^https?://[.a-zA-Z0-9:-]+/?$ ]]; then
         core::log::error "Invalid mattermost hostname: $HOST"
         return 1
     fi
