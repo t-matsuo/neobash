@@ -21,6 +21,7 @@ Controlling log level. Set true or false.
 * LOG_DEBUG : Switch the output of the DEBUG log. default: ``false``
 * LOG_STDERR : Switch the output of the standard error log. default: ``true``
 * LOG_SIGERR : Switch the output of the SIGERROR log. default: ``true``
+* LOG_SIGTERM : Switch the output of the SIGTERM log. default: ``true``
 
 Controlling log format.
 * LOG_FORMAT : Set the log format ``plain`` or ``json``. default: ``plain``
@@ -47,7 +48,7 @@ Controlling log prefix.
 * LOG_PREFIX_DEBUG : set the log prefix for DEBUG log. default: ``DEBUG``
 * LOG_PREFIX_TRACE : set the log prefix for TRACE log. default: ``TRACE``
 * LOG_PREFIX_STDERR : set the log prefix for stderr log default: ``STDERR``
-* LOG_PREFIX_SIGERR : set the log prefix for SIGERROR log default: ``SIGERR``
+* LOG_PREFIX_SIGNAL : set the log prefix for signal log default: ``SIGNAL``
 
 Controlling debug log filter.
 * LOG_DEBUG_FUNC : select the debug log by function name. default: ``''``
@@ -70,6 +71,7 @@ LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 * [core::log::stack_trace](#corelogstacktrace)
 * [core::log::crit](#corelogcrit)
 * [core::log::sig_error](#corelogsigerror)
+* [core::log::sig_term](#corelogsigterm)
 * [core::log::error](#corelogerror)
 * [core::log::error_exit](#corelogerrorexit)
 * [core::log::echo](#corelogecho)
@@ -81,6 +83,8 @@ LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 * [core::log::is_debug](#corelogisdebug)
 * [core::log::enable_err_trap](#corelogenableerrtrap)
 * [core::log::disable_err_trap](#corelogdisableerrtrap)
+* [core::log::enable_term_trap](#corelogenabletermtrap)
+* [core::log::disable_term_trap](#corelogdisabletermtrap)
 
 ### core::log::stack_trace
 
@@ -116,6 +120,22 @@ Alias is defined as ``log::crit``
 ### core::log::sig_error
 
 Logger for SIGERR.
+
+#### Arguments
+
+* **$1** (string): log message.
+
+#### Exit codes
+
+* 0
+
+#### Output on stderr
+
+* output error log message and stack trace.
+
+### core::log::sig_term
+
+Logger for SIGTERM.
 
 #### Arguments
 
@@ -284,10 +304,6 @@ Enable error trap
 
 Alias is defined as ``log::enable_err_trap``
 
-#### Options
-
-* none
-
 #### Exit codes
 
 * 0
@@ -302,9 +318,33 @@ Disable error trap
 
 Alias is defined as ``log::disable_err_trap``
 
-#### Options
+#### Exit codes
+
+* 0
+
+#### Output on stderr
 
 * none
+
+### core::log::enable_term_trap
+
+Enable term trap
+
+Alias is defined as ``log::enable_term_trap``
+
+#### Exit codes
+
+* 143
+
+#### Output on stderr
+
+* none
+
+### core::log::disable_term_trap
+
+Disable term trap
+
+Alias is defined as ``log::disable_term_trap``
 
 #### Exit codes
 

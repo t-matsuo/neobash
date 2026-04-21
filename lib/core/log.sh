@@ -22,6 +22,7 @@
 # * LOG_DEBUG : Switch the output of the DEBUG log. default: ``false``
 # * LOG_STDERR : Switch the output of the standard error log. default: ``true``
 # * LOG_SIGERR : Switch the output of the SIGERROR log. default: ``true``
+# * LOG_SIGTERM : Switch the output of the SIGTERM log. default: ``true``
 #
 # Controlling log format.
 # * LOG_FORMAT : Set the log format ``plain`` or ``json``. default: ``plain``
@@ -48,7 +49,7 @@
 # * LOG_PREFIX_DEBUG : set the log prefix for DEBUG log. default: ``DEBUG``
 # * LOG_PREFIX_TRACE : set the log prefix for TRACE log. default: ``TRACE``
 # * LOG_PREFIX_STDERR : set the log prefix for stderr log default: ``STDERR``
-# * LOG_PREFIX_SIGERR : set the log prefix for SIGERROR log default: ``SIGERR``
+# * LOG_PREFIX_SIGNAL : set the log prefix for signal log default: ``SIGNAL``
 #
 # Controlling debug log filter.
 # * LOG_DEBUG_FUNC : select the debug log by function name. default: ``''``
@@ -104,6 +105,7 @@ readonly CORE_LOG_DECO_REVERSE=7
 : "${LOG_DEBUG:=false}"
 : "${LOG_STDERR:=true}"
 : "${LOG_SIGERR:=true}"
+: "${LOG_SIGTERM:=true}"
 
 # show stack trace
 : "${LOG_STACK_TRACE:=true}"
@@ -141,7 +143,7 @@ declare -i -g CORE_LOG_COLOR_INFO="${CORE_LOG_COLOR_GREEN}"
 declare -i -g CORE_LOG_COLOR_DEBUG="${CORE_LOG_COLOR_YELLOW}"
 declare -i -g CORE_LOG_COLOR_TRACE="${CORE_LOG_DECO_UNDERLINE}"
 declare -i -g CORE_LOG_COLOR_STDERR="${CORE_LOG_BCOLOR_MAGENTA}"
-declare -i -g CORE_LOG_COLOR_SIGERR="${CORE_LOG_BCOLOR_BLUE}"
+declare -i -g CORE_LOG_COLOR_SIGNAL="${CORE_LOG_BCOLOR_BLUE}"
 
 # stdout/stderr IO Settings
 readonly CORE_LOG_STDOUT="1"
@@ -154,7 +156,7 @@ readonly CORE_LOG_STDERR="2"
 : "${CORE_LOG_IO_DEBUG:=$CORE_LOG_STDERR}"
 : "${CORE_LOG_IO_TRACE:=$CORE_LOG_STDERR}"
 : "${CORE_LOG_IO_STDERR:=$CORE_LOG_STDERR}"
-: "${CORE_LOG_IO_SIGERR:=$CORE_LOG_STDERR}"
+: "${CORE_LOG_IO_SIGNAL:=$CORE_LOG_STDERR}"
 
 # Log Prefix
 : "${LOG_PREFIX_CRIT:=CRIT}"
@@ -165,7 +167,7 @@ readonly CORE_LOG_STDERR="2"
 : "${LOG_PREFIX_DEBUG:=DEBUG}"
 : "${LOG_PREFIX_TRACE:=TRACE}"
 : "${LOG_PREFIX_STDERR:=STDERR}"
-: "${LOG_PREFIX_SIGERR:=SIGERR}"
+: "${LOG_PREFIX_SIGNAL:=SIGNAL}"
 #### Logging Parameters End ####
 
 # @internal
@@ -285,7 +287,10 @@ __core::log__() {
             __core::log::stderr__ "${CORE_LOG_COLOR_STDERR}" "$LOG"
             ;;
         "core::log::sig_error")
-            __core::log::stderr__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
+            __core::log::stderr__ "${CORE_LOG_COLOR_SIGNAL}" "$LOG"
+            ;;
+        "core::log::sig_term")
+            __core::log::stderr__ "${CORE_LOG_COLOR_SIGNAL}" "$LOG"
             ;;
         "core::log::warn")
             [[ "${CORE_LOG_IO_WARN}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_WARN}" "$LOG"
@@ -317,9 +322,9 @@ __core::log__() {
                     [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
                     [[ "${CORE_LOG_IO_ERROR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_ERROR}" "$LOG"
                     ;;
-                "core::log::sig_error")
-                    [[ "${CORE_LOG_IO_SIGERR}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
-                    [[ "${CORE_LOG_IO_SIGERR}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_SIGERR}" "$LOG"
+                "core::log::sig_error" | "core::log::sig_term" )
+                    [[ "${CORE_LOG_IO_SIGNAL}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_SIGNAL}" "$LOG"
+                    [[ "${CORE_LOG_IO_SIGNAL}" == "${CORE_LOG_STDERR}" ]] && __core::log::stderr__ "${CORE_LOG_COLOR_SIGNAL}" "$LOG"
                     ;;
                 *)
                     [[ "${CORE_LOG_IO_TRACE}" == "${CORE_LOG_STDOUT}" ]] && __core::log::stdout__ "${CORE_LOG_COLOR_TRACE}" "$LOG"
@@ -352,9 +357,8 @@ core::log::stack_trace() {
     local TRACE_FUNC_NAME=""
 
     if [[ "$LOG_FORMAT" == "json" ]]; then
-        [[ $# -lt 2 ]] && echo "Oops: core::log::stack_trace: no arg1 or arg2" >&$core_log_saved_stderr && exit 1
-        LEVEL="$1"
-        MESSAGE="$2"
+        LEVEL="${1:-none}"
+        MESSAGE="${2:-none}"
     fi
 
     if [[ "$LOG_STACK_TRACE" == "true" ]]; then
@@ -405,8 +409,21 @@ core::log::crit() {
 # @exitcode 0
 core::log::sig_error() {
     if [[ "$LOG_SIGERR" == "true" ]]; then
-        [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_SIGERR}" "${1:-}"
-        core::log::stack_trace "${LOG_PREFIX_SIGERR}" "${1:-}"
+        [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_SIGNAL}" "${1:-}"
+        core::log::stack_trace "${LOG_PREFIX_SIGNAL}" "${1:-}"
+    fi
+    return 0
+}
+
+# @description Logger for SIGTERM.
+#
+# @arg $1 string log message.
+# @stderr output error log message and stack trace.
+# @exitcode 0
+core::log::sig_term() {
+    if [[ "$LOG_SIGTERM" == "true" ]]; then
+        [[ "$LOG_STACK_TRACE" != "true" ]] || [[ "$LOG_FORMAT" != "json" ]] && __core::log__ "${LOG_PREFIX_SIGNAL}" "${1:-}"
+        core::log::stack_trace "${LOG_PREFIX_SIGNAL}" "${1:-}"
     fi
     return 0
 }
@@ -629,7 +646,6 @@ __core::log::switch_terminal_color__() {
 # @description Enable error trap
 #
 # Alias is defined as ``log::enable_err_trap``
-# @arg none
 # @stderr none
 # @exitcode 0
 core::log::enable_err_trap() {
@@ -639,11 +655,28 @@ core::log::enable_err_trap() {
 # @description Disable error trap
 #
 # Alias is defined as ``log::disable_err_trap``
-# @arg none
 # @stderr none
 # @exitcode 0
 core::log::disable_err_trap() {
     trap '[[ "$CORE_LOG_IS_SIGINT" == "true" ]] && exit 1' ERR
+}
+
+# @description Enable term trap
+#
+# Alias is defined as ``log::enable_term_trap``
+# @stderr none
+# @exitcode 143
+core::log::enable_term_trap() {
+    trap 'core::log::sig_term "catch SIGTERM. exit 143"; exit 143' TERM
+}
+
+# @description Disable term trap
+#
+# Alias is defined as ``log::disable_term_trap``
+# @stderr none
+# @exitcode 0
+core::log::disable_term_trap() {
+    trap TERM
 }
 
 #### main ####
@@ -652,7 +685,7 @@ set -o errtrace
 # handle signals
 CORE_LOG_IS_SIGINT="false"
 core::log::enable_err_trap
-trap 'core::log::debug "catch SIGTERM"; core::log::stack_trace; exit 1' TERM
+core::log::enable_term_trap
 trap 'core::log::debug "catch SIGINT";  CORE_LOG_IS_SIGINT="true"' INT
 
 # can omit core:: in core library
@@ -669,6 +702,8 @@ alias log::debug='core::log::debug'
 alias log::is_debug='core::log::is_debug'
 alias log::enable_err_trap='core::log::enable_err_trap'
 alias log::disable_err_trap='core::log::disable_err_trap'
+alias log::enable_term_trap='core::log::enable_term_trap'
+alias log::disable_term_trap='core::log::disable_term_trap'
 
 #### init ####
 
