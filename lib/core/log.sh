@@ -345,7 +345,7 @@ core::log::stack_trace() {
     local caller="${FUNCNAME[1]}"
     local i
     local space=""
-    local LOG_JSON_STAcK_TRACE=",\"stack_trace\": ["
+    local LOG_JSON_STACK_TRACE=",\"stack_trace\": ["
     local IS_JSON_FIRST_STACK=true
     local TRACE_FILE_NAME=""
     local TRACE_LINE_NO=""
@@ -367,18 +367,18 @@ core::log::stack_trace() {
                 space="  $space"
             fi
             if [[ "$LOG_FORMAT" == "json" ]]; then
-                [[ "$IS_JSON_FIRST_STACK" == "false" ]] && LOG_JSON_STAcK_TRACE="$LOG_JSON_STAcK_TRACE,"
+                [[ "$IS_JSON_FIRST_STACK" == "false" ]] && LOG_JSON_STACK_TRACE="$LOG_JSON_STACK_TRACE,"
                 [[ "$IS_JSON_FIRST_STACK" == "true" ]]  && IS_JSON_FIRST_STACK=false
                 # escape double quote
                 TRACE_FILE_NAME="${BASH_SOURCE[$i]}" && TRACE_FILE_NAME="${TRACE_FILE_NAME//\\n/\\\\n}"
                 TRACE_LINE_NO="${BASH_LINENO[$i-1]}" && TRACE_LINE_NO="${TRACE_LINE_NO//\\n/\\\\n}"
                 TRACE_FUNC_NAME="${FUNCNAME[$i]}"    && TRACE_FUNC_NAME="${TRACE_FUNC_NAME//\\n/\\\\n}"
-                LOG_JSON_STAcK_TRACE="${LOG_JSON_STAcK_TRACE}{\"file\": \"${TRACE_FILE_NAME}\", \"line\": \"${TRACE_LINE_NO}\", \"function\": \"${TRACE_FUNC_NAME}\"}"
+                LOG_JSON_STACK_TRACE="${LOG_JSON_STACK_TRACE}{\"file\": \"${TRACE_FILE_NAME}\", \"line\": \"${TRACE_LINE_NO}\", \"function\": \"${TRACE_FUNC_NAME}\"}"
             fi
         done
         if [[ "$LOG_FORMAT" == "json" ]]; then
-            LOG_JSON_STAcK_TRACE="$LOG_JSON_STAcK_TRACE]"
-            __core::log__ "${LEVEL}" "$MESSAGE" "$LOG_JSON_STAcK_TRACE"
+            LOG_JSON_STACK_TRACE="$LOG_JSON_STACK_TRACE]"
+            __core::log__ "${LEVEL}" "$MESSAGE" "$LOG_JSON_STACK_TRACE"
         fi
     fi
     return 0
