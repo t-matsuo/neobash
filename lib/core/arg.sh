@@ -120,7 +120,7 @@ core::arg::add_option() {
     local OPTION
     local TYPE="string"
     local REQUIRED="false"
-    local HELP="no help message for this option"
+    local HELP="no help message for this flag"
     local STORE="none"
     local DEFAULT=""
     local OPTIND
@@ -654,6 +654,7 @@ core::arg::show_usage() {
 
     [[ -v 1 ]] && CORE_ARG_HELP_PREFIX=$1
 
+    echo -e "\n${CORE_ARG_HELP_PREFIX}Flags\n"
     for label in $CORE_ARG_LABEL; do
         value=""
         if [[ ${CORE_ARG_REQUIRED["$label"]} == "true" ]]; then
@@ -683,6 +684,30 @@ core::arg::show_usage() {
             echo "$CORE_ARG_HELP_PREFIX  * DEFAULT: \"${CORE_ARG_DEFAULT[$label]}\""
         fi
     done
+    echo -e "\n${CORE_ARG_HELP_PREFIX}Global Flags\n"
+    echo -e "${CORE_ARG_HELP_PREFIX}* -h, --help\t\t(optional)"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * show help message"
+    echo -e "${CORE_ARG_HELP_PREFIX}* -v, --version\t\t(optional)"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * show version"
+    echo
+    echo -e "${CORE_ARG_HELP_PREFIX}Global Main Environment Variables\n"
+    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_DEBUG"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * print debug log"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: bool"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: false"
+    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_DEBUG_FUNC"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * select the debug log by function name"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: string"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: (empty)"
+    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_DEBUG_FILE"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * select the debug log by file name"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: string"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: (empty)"
+    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_FORMAT"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * log format"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: plain / json"
+    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: plain"
+    echo
 }
 
 # @description Set option help text prefix.
