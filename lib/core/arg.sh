@@ -33,6 +33,7 @@ alias core::arg::init_global='
     CORE_ARG_LABEL=""
     CORE_ARG_HELP_HEADER=""
     CORE_ARG_HELP_PREFIX=""
+    CORE_ARG_VERSION=""
     declare -A CORE_ARG_OPTION_LABEL
     declare -A CORE_ARG_OPTION_SHORT
     declare -A CORE_ARG_OPTION_LONG
@@ -51,6 +52,7 @@ alias core::arg::init_local='
     local CORE_ARG_LABEL=""
     local CORE_ARG_HELP_HEADER=""
     local CORE_ARG_HELP_PREFIX=""
+    local CORE_ARG_VERSION=""
     local -A CORE_ARG_OPTION_LABEL
     local -A CORE_ARG_OPTION_SHORT
     local -A CORE_ARG_OPTION_LONG
@@ -375,6 +377,11 @@ core::arg::parse() {
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
                 echo -e "$CORE_ARG_HELP_HEADER"
                 core::arg::show_usage
+                exit 0
+            fi
+            if [[ "$arg" == "-v" || "$arg" == "--version" ]]; then
+                [[ -n "$CORE_ARG_VERSION" ]] && echo -e "$CORE_ARG_VERSION"
+                [[ -z "$CORE_ARG_VERSION" ]] && echo -e "no version"
                 exit 0
             fi
         fi
@@ -706,6 +713,21 @@ core::arg::add_help_header() {
     return 0
 }
 
+# @description Add version
+# * Alias is defined as ``arg::add_version``
+# @stdout None
+# @stderr None
+# @arg $1 (string): version string
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
+core::arg::add_version() {
+    [[ $# -eq 0 ]] && log::error "version is empty" && return 1
+    CORE_ARG_VERSION+="$1"
+    log::debug "version \"$CORE_ARG_VERSION\""
+    return 0
+}
+
+
 # define aliases
 alias arg::init_global='core::arg::init_global'
 alias arg::init_local='core::arg::init_local'
@@ -720,3 +742,4 @@ alias arg::get_all_option='core::arg::get_all_option'
 alias arg::show_usage='core::arg::show_usage'
 alias arg::set_help_prefix='core::arg::set_help_prefix'
 alias arg::add_help_header='core::arg::add_help_header'
+alias arg::add_version='core::arg::add_version'
