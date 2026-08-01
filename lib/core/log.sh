@@ -263,7 +263,7 @@ __core::log__() {
     fi
     if [[ "$LOG_FORMAT" == "plain" ]]; then
          [[ "$LOG_TIMESTAMP" == "true" ]] && DATE+=" "
-         LEVEL+=" "
+         [[ -n "${LEVEL}" ]] && LEVEL+=" "
          LOG="${DATE}${LEVEL}${MESSAGE}"
     elif [[ "$LOG_FORMAT" == "json" ]]; then
         # escape double quote

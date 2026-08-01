@@ -61,6 +61,14 @@ test_core::log::info() {
   assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} INFO info log" "$OUTPUT"
 }
 
+test_core::log::info_no_prefix() {
+  export LOG_PREFIX_INFO=""
+  local OUTPUT=$( core::log::info "info log" )
+  assert_exit_code "0"
+
+  assert_matches "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{4} info log" "$OUTPUT"
+}
+
 test_core::log::info_dev_null() {
   core::log::info "info log"
   assert_exit_code "0"
