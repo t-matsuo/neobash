@@ -408,7 +408,11 @@ core::arg::parse() {
                 skip=false
                 continue
             fi
-            next_arg="${PARSE_ARGS[$(( $num + 1 ))]}"
+            if [[ -v PARSE_ARGS[$(( $num + 1 ))] ]]; then
+                next_arg="${PARSE_ARGS[$(( $num + 1 ))]}"
+            else
+                core::log::error_exit "$arg value is empty"
+            fi
             # core::log::debug "next_arg: $next_arg"
             __core::arg::is_option__ "$next_arg" && core::log::error_exit "$arg value is empty"
             [[ "$next_arg" == "--" ]] && core::log::error_exit "$arg value is empty"
