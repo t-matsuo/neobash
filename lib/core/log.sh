@@ -679,6 +679,36 @@ core::log::disable_term_trap() {
     trap TERM
 }
 
+# @description Disable all log prefixes.
+#
+# Alias is defined as ``log::disable_prefix``
+# @stderr none
+# @exitcode 0
+core::log::disable_prefixes() {
+    core::log::debug "disable all log prefixes"
+    LOG_PREFIX_CRIT=""
+    LOG_PREFIX_ERROR=""
+    LOG_PREFIX_WARN=""
+    LOG_PREFIX_NOTICE=""
+    LOG_PREFIX_INFO=""
+    LOG_PREFIX_DEBUG=""
+    LOG_PREFIX_TRACE=""
+    LOG_PREFIX_STDERR=""
+    LOG_PREFIX_SIGNAL=""
+}
+
+# @description Disable all decorations sush as color, timestamp
+#
+# Alias is defined as ``log::disable_decorations``
+# @stderr none
+# @exitcode 0
+core::log::disable_decorations() {
+    core::log::debug "disable decorations"
+    LOG_COLOR_STDOUT="false"
+    LOG_COLOR_STDERR="false"
+    LOG_TIMESTAMP="false"
+}
+
 #### main ####
 set -o errtrace
 
@@ -704,6 +734,8 @@ alias log::enable_err_trap='core::log::enable_err_trap'
 alias log::disable_err_trap='core::log::disable_err_trap'
 alias log::enable_term_trap='core::log::enable_term_trap'
 alias log::disable_term_trap='core::log::disable_term_trap'
+alias core::log::disable_prefixes='log::disable_prefixes'
+alias core::log::disable_decorations='log::disable_decorations'
 
 #### init ####
 

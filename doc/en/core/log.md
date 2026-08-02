@@ -85,6 +85,8 @@ LOG_DEBUG_FILE="mylib/myutil.sh" ./myscript.sh
 * [core::log::disable_err_trap](#corelogdisableerrtrap)
 * [core::log::enable_term_trap](#corelogenabletermtrap)
 * [core::log::disable_term_trap](#corelogdisabletermtrap)
+* [core::log::disable_prefixes](#corelogdisableprefixes)
+* [core::log::disable_decorations](#corelogdisabledecorations)
 
 ### core::log::stack_trace
 
@@ -345,6 +347,34 @@ Alias is defined as ``log::enable_term_trap``
 Disable term trap
 
 Alias is defined as ``log::disable_term_trap``
+
+#### Exit codes
+
+* 0
+
+#### Output on stderr
+
+* none
+
+### core::log::disable_prefixes
+
+Disable all log prefixes.
+
+Alias is defined as ``log::disable_prefix``
+
+#### Exit codes
+
+* 0
+
+#### Output on stderr
+
+* none
+
+### core::log::disable_decorations
+
+Disable all decorations sush as color, timestamp
+
+Alias is defined as ``log::disable_decorations``
 
 #### Exit codes
 
