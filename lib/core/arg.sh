@@ -120,7 +120,7 @@ core::arg::add_option() {
     local OPTION
     local TYPE="string"
     local REQUIRED="false"
-    local HELP="no help message for this flag"
+    local HELP="no help message"
     local STORE="none"
     local DEFAULT=""
     local OPTIND
@@ -364,6 +364,10 @@ core::arg::parse() {
 
         # fixed option
         if [[ "${FUNCNAME[1]}" == "main" ]] && [[ ! -v FUNCNAME[2] ]] ; then
+            if [[ "$arg" == "--debug" ]]; then
+                LOG_DEBUG=true
+                continue
+            fi
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
                 echo -e "$CORE_ARG_HELP_HEADER"
                 if [[ "$( type -t show_help )" == "function" ]]; then show_help; else core::arg::show_usage; fi
@@ -374,6 +378,10 @@ core::arg::parse() {
                 exit 0
             fi
         else
+            if [[ "$arg" == "--debug" ]]; then
+                LOG_DEBUG=true
+                continue
+            fi
             if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
                 echo -e "$CORE_ARG_HELP_HEADER"
                 core::arg::show_usage
@@ -650,64 +658,56 @@ core::arg::get_all_option() {
 core::arg::show_usage() {
     local label
     local required
-    local value
+    local type
+    local help_spaces
+    local help
 
     [[ -v 1 ]] && CORE_ARG_HELP_PREFIX=$1
 
-    echo -e "\n${CORE_ARG_HELP_PREFIX}Flags\n"
+    printf "%s\n" "${CORE_ARG_HELP_PREFIX}## Options, Flags"
     for label in $CORE_ARG_LABEL; do
-        value=""
+        type=""
         if [[ ${CORE_ARG_REQUIRED["$label"]} == "true" ]]; then
             required="(required)"
+        elif [[ ${CORE_ARG_STORE["$label"]} != "none" ]]; then
+            required="(flag)"
         else
             required="(optional)"
         fi
-        [[ "${CORE_ARG_STORE["$label"]}" == "none" ]] && value=" VALUE"
+        [[ "${CORE_ARG_STORE["$label"]}" == "none" ]] && type="[${CORE_ARG_TYPE[$label]}]"
 
         if [[ -n "${CORE_ARG_OPTION_SHORT["$label"]:-}" ]]; then
-            echo -n "${CORE_ARG_HELP_PREFIX}* ${CORE_ARG_OPTION_SHORT["$label"]}"
             if [[ -n "${CORE_ARG_OPTION_LONG["$label"]:-}" ]]; then
-                echo -n ", ${CORE_ARG_OPTION_LONG["$label"]}"
-                echo -e "${value}\t${required}"
+                printf "%-40s" "${CORE_ARG_HELP_PREFIX}${CORE_ARG_OPTION_SHORT["$label"]} ${CORE_ARG_OPTION_LONG["$label"]} $type"
+                printf "%-10s%s" "${required}" ": "
             else
-                echo -e "${value}\t\t\t${required}"
+                printf "%-40s" "${CORE_ARG_HELP_PREFIX}${CORE_ARG_OPTION_SHORT["$label"]} $type"
+                printf "%-10s%s" "${required}" ": "
             fi
         else
-            echo -n "${CORE_ARG_HELP_PREFIX}* ${CORE_ARG_OPTION_LONG["$label"]}"
-            echo -e "${value}\t\t${required}"
+            printf "%-40s" "${CORE_ARG_HELP_PREFIX}${CORE_ARG_OPTION_LONG["$label"]} $type"
+            printf "%-10s%s" "${required}" ": "
         fi
-        echo "$CORE_ARG_HELP_PREFIX  * ${CORE_ARG_HELP[$label]}"
-        if [[ "${CORE_ARG_STORE["$label"]}" == "none" ]]; then
-            echo "$CORE_ARG_HELP_PREFIX  * VALUE: ${CORE_ARG_TYPE[$label]}"
-        fi
+        # insert line break if help message has it or '\n'
+        help_spaces="$( printf "%-50s  " "${CORE_ARG_HELP_PREFIX}" )"
+        help="${CORE_ARG_HELP[$label]//\\n/\\n$help_spaces}"
+        help="${help//$'\n'/$'\n'$help_spaces}"
+        printf "%b   " "$help"
         if [[ "${CORE_ARG_STORE["$label"]}" == "none" && "${CORE_ARG_REQUIRED["$label"]}" == "false" ]]; then
-            echo "$CORE_ARG_HELP_PREFIX  * DEFAULT: \"${CORE_ARG_DEFAULT[$label]}\""
+            echo "DEFAULT: \"${CORE_ARG_DEFAULT[$label]}\""
+        else
+            echo
         fi
     done
-    echo -e "\n${CORE_ARG_HELP_PREFIX}Global Flags\n"
-    echo -e "${CORE_ARG_HELP_PREFIX}* -h, --help\t\t(optional)"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * show help message"
-    echo -e "${CORE_ARG_HELP_PREFIX}* -v, --version\t\t(optional)"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * show version"
-    echo
-    echo -e "${CORE_ARG_HELP_PREFIX}Global Main Environment Variables\n"
-    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_DEBUG"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * print debug log"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: bool"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: false"
-    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_DEBUG_FUNC"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * select the debug log by function name"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: string"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: (empty)"
-    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_DEBUG_FILE"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * select the debug log by file name"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: string"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: (empty)"
-    echo -e "${CORE_ARG_HELP_PREFIX}* LOG_FORMAT"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * log format"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * VALUE: plain / json"
-    echo -e "${CORE_ARG_HELP_PREFIX}  * DEFAULT: plain"
-    echo
+    printf "${CORE_ARG_HELP_PREFIX}\n%s\n" "${CORE_ARG_HELP_PREFIX}## Global Flags"
+    printf "%-40s%-10s%s\n" "${CORE_ARG_HELP_PREFIX}-h, --help"    "(flag)" ": show help message"
+    printf "%-40s%-10s%s\n" "${CORE_ARG_HELP_PREFIX}-v, --version" "(flag)" ": show version"
+    printf "%-40s%-10s%s\n" "${CORE_ARG_HELP_PREFIX}--debug"       "(flag)" ": print all debug logs same as LOG_DEBUG environtme variable"
+    printf "${CORE_ARG_HELP_PREFIX}\n%s\n" "${CORE_ARG_HELP_PREFIX}## Global Main Environment Variables for logging"
+    printf "%-40s%-10s   %s\n" "${CORE_ARG_HELP_PREFIX}LOG_DEBUG=[bool]"         "print all debug logs"                              'DEFAULT: "false"'
+    printf "%-40s%-10s   %s\n" "${CORE_ARG_HELP_PREFIX}LOG_DEBUG_FUNC=[string]"  "print debug logs for the specified function names" 'DEFAULT: ""'
+    printf "%-40s%-10s   %s\n" "${CORE_ARG_HELP_PREFIX}LOG_DEBUG_FILE=[string]"  "print debug logs for the specified file names"     'DEFAULT: ""'
+    printf "%-40s%-10s   %s\n" "${CORE_ARG_HELP_PREFIX}LOG_FORMAT=[\"plain\"|\"json\"]"  "select log format"                         'DEFAULT: "plain"'
 }
 
 # @description Set option help text prefix.
