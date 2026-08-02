@@ -702,7 +702,7 @@ core::arg::show_usage() {
     printf "${CORE_ARG_HELP_PREFIX}\n%s\n" "${CORE_ARG_HELP_PREFIX}## Global Flags"
     printf "%-40s%-10s%s\n" "${CORE_ARG_HELP_PREFIX}-h, --help"    "(flag)" ": show help message"
     printf "%-40s%-10s%s\n" "${CORE_ARG_HELP_PREFIX}-v, --version" "(flag)" ": show version"
-    printf "%-40s%-10s%s\n" "${CORE_ARG_HELP_PREFIX}--debug"       "(flag)" ": print all debug logs same as LOG_DEBUG environtme variable"
+    printf "%-40s%-10s%s\n" "${CORE_ARG_HELP_PREFIX}--debug"       "(flag)" ": print all debug logs but until the the arg is parsed, no debug logs will be shown."
     printf "${CORE_ARG_HELP_PREFIX}\n%s\n" "${CORE_ARG_HELP_PREFIX}## Global Main Environment Variables for logging"
     printf "%-40s%-10s   %s\n" "${CORE_ARG_HELP_PREFIX}LOG_DEBUG=[bool]"         "print all debug logs"                              'DEFAULT: "false"'
     printf "%-40s%-10s   %s\n" "${CORE_ARG_HELP_PREFIX}LOG_DEBUG_FUNC=[string]"  "print debug logs for the specified function names" 'DEFAULT: ""'
