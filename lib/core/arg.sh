@@ -199,7 +199,7 @@ core::arg::add_option() {
     fi
 
     # add option
-    core::log::debug "add LABEL: $LABEL, OPTION: $OPTION, TYPE: $TYPE, REQUIRED: $REQUIRED, HELP: $HELP, STORE: $STORE, DEFAULT: $DEFAULT"
+    # core::log::debug "add LABEL: $LABEL, OPTION: $OPTION, TYPE: $TYPE, REQUIRED: $REQUIRED, HELP: $HELP, STORE: $STORE, DEFAULT: $DEFAULT"
     CORE_ARG_LABEL="$CORE_ARG_LABEL $LABEL"
     CORE_ARG_OPTION_LABEL["$OPTION"]="$LABEL"
     if [[ "$OPTION" =~ ^-- ]]; then
@@ -261,7 +261,7 @@ core::arg::add_option_alias() {
     # check alias
     __core::arg::has_option__ "$ALIAS" && core::log::error_exit "alias \"$ALIAS\" already exists"
 
-    core::log::debug "add LABEL: $LABEL, ALIAS: $ALIAS"
+    # core::log::debug "add LABEL: $LABEL, ALIAS: $ALIAS"
     if [[ "$ALIAS" =~ ^-- ]]; then
         CORE_ARG_OPTION_LONG["$LABEL"]="$ALIAS"
         CORE_ARG_OPTION_LABEL["$ALIAS"]="$LABEL"
@@ -345,7 +345,7 @@ core::arg::parse() {
     local arg_num=0
     local type
 
-    core::log::debug "PARSE_ARGS[*]=${PARSE_ARGS[*]}"
+    core::log::debug "parsing args '${PARSE_ARGS[*]}' at ${FUNCNAME[1]}() ${BASH_SOURCE[1]}:${BASH_LINENO[0]}"
     for arg in "${PARSE_ARGS[@]}"; do
         num=$(( $num + 1 ))
         if [[ "$skip_all" == "true" ]]; then
@@ -394,22 +394,22 @@ core::arg::parse() {
             fi
         fi
 
-        core::log::debug "parsing: $arg"
+        # core::log::debug "parsing: $arg"
         if __core::arg::is_option__ "$arg"; then
             label="${CORE_ARG_OPTION_LABEL[$arg]:-}"
-            core::log::debug "label:$label arg:$arg"
+            # core::log::debug "\${ARGS[$label]} arg name is $arg"
             if [[ -z "${label:-}" ]]; then
                 core::log::error_exit "LABEL of \"$arg\" dose not exist"
             fi
             if [[ "${CORE_ARG_STORE[$label]}" != "none" ]]; then
                 [[ -n ${CORE_ARG_VALUE["$label"]:-} ]] && core::log::error_exit "$arg value is already set"
-                core::log::debug "$label value is ${CORE_ARG_STORE[$label]}"
+                core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_STORE[$label]}\""
                 CORE_ARG_VALUE["$label"]="${CORE_ARG_STORE[$label]}"
                 skip=false
                 continue
             fi
             next_arg="${PARSE_ARGS[$(( $num + 1 ))]}"
-            core::log::debug "next_arg: $next_arg"
+            # core::log::debug "next_arg: $next_arg"
             __core::arg::is_option__ "$next_arg" && core::log::error_exit "$arg value is empty"
             [[ "$next_arg" == "--" ]] && core::log::error_exit "$arg value is empty"
             [[ -n ${CORE_ARG_VALUE["$label"]:-} ]] && core::log::error_exit "$arg value is already set"
@@ -419,6 +419,7 @@ core::arg::parse() {
             __core::arg::check_value_type__ "$type" "$next_arg" || exit 1
 
             CORE_ARG_VALUE["$label"]="$next_arg"
+            core::log::debug "\${ARGS[$label]}=\"$next_arg\""
             skip=true
             continue
         else
@@ -439,7 +440,7 @@ core::arg::parse() {
         else
             option="${CORE_ARG_OPTION_LONG[$label]}"
         fi
-        core::log::debug "checking value: $label ($option)"
+        # core::log::debug "checking \${ARGS[$label]} value ($option)"
 
         # check required value is set
         [[ ${CORE_ARG_REQUIRED["$label"]} == "true" && -z ${CORE_ARG_VALUE["$label"]:-} ]] \
@@ -450,29 +451,29 @@ core::arg::parse() {
             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
             case ${CORE_ARG_TYPE["$label"]} in
                 string) if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
-                            core::log::debug "$label default string value is none"
+                            core::log::debug "\${ARGS[$label]}=\"\" (no default string)"
                             CORE_ARG_DEFAULT["$label"]=""
                             CORE_ARG_VALUE["$label"]=""
                         else
-                            core::log::debug "$label default string value is ${CORE_ARG_DEFAULT["$label"]}"
+                            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default string)"
                             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
                         fi
                         ;;
                 int)    if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
-                            core::log::debug "$label default int value is none"
+                            core::log::debug "\${ARGS[$label]}=\"0\" (no default int)"
                             CORE_ARG_DEFAULT["$label"]="0"
                             CORE_ARG_VALUE["$label"]="0"
                         else
-                            core::log::debug "$label default int value is ${CORE_ARG_DEFAULT["$label"]}"
+                            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default int)"
                             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
                         fi
                         ;;
                 bool)   if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
-                            core::log::debug "$label default bool value is none"
+                            core::log::debug "\${ARGS[$label]}=\"false\" (no default bool)"
                             CORE_ARG_DEFAULT["$label"]="false"
                             CORE_ARG_VALUE["$label"]="false"
                         else
-                            core::log::debug "$label default bool value is ${CORE_ARG_DEFAULT["$label"]}"
+                            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default bool)"
                             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
                         fi
                         ;;
@@ -592,13 +593,13 @@ core::arg::del_value() {
         core::log::error_exit "label \"$LABEL\" dose not defined"
     fi
     case ${CORE_ARG_TYPE["$LABEL"]} in
-        string) core::log::debug "delete $LABEL string value"
+        string) core::log::debug "reset the value of \${ARGS[$LABEL]} (string) to its default"
                 CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
                 ;;
-        int)    core::log::debug "delete $LABEL int value"
+        int)    core::log::debug "reset the value of \${$LABEL} (int) to its default"
                 CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
                 ;;
-        bool)   core::log::debug "delete $LABEL bool value"
+        bool)   core::log::debug "reset the value of \${$LABEL} (bool) to its default"
                 CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
                 ;;
         *) core::log::crit "invalid type: ${CORE_ARG_TYPE[$LABEL]}";;
@@ -720,7 +721,7 @@ core::arg::show_usage() {
 core::arg::set_help_prefix() {
     [[ $# -eq 0 ]] && log::error "help prefix is empty" && return 1
     CORE_ARG_HELP_PREFIX="$1"
-    log::debug "help prefix is \"$CORE_ARG_HELP_PREFIX\""
+    # log::debug "help prefix is \"$CORE_ARG_HELP_PREFIX\""
     return 0
 }
 
@@ -734,7 +735,7 @@ core::arg::set_help_prefix() {
 core::arg::add_help_header() {
     [[ $# -eq 0 ]] && log::error "help header is empty" && return 1
     CORE_ARG_HELP_HEADER+="$1"
-    log::debug "help header \"$CORE_ARG_HELP_HEADER\""
+    # log::debug "add help header \"$CORE_ARG_HELP_HEADER\""
     return 0
 }
 
@@ -748,7 +749,6 @@ core::arg::add_help_header() {
 core::arg::add_version() {
     [[ $# -eq 0 ]] && log::error "version is empty" && return 1
     CORE_ARG_VERSION+="$1"
-    log::debug "version \"$CORE_ARG_VERSION\""
     return 0
 }
 
