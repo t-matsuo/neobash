@@ -229,9 +229,7 @@ core::arg::add_option() {
     CORE_ARG_REQUIRED["$LABEL"]="$REQUIRED"
     CORE_ARG_HELP["$LABEL"]="$HELP"
     CORE_ARG_STORE["$LABEL"]="$STORE"
-    if [[ "$REQUIRED" != "true" ]]; then
-        CORE_ARG_DEFAULT["$LABEL"]="$DEFAULT"
-    fi
+    CORE_ARG_DEFAULT["$LABEL"]="$DEFAULT"
 }
 
 # @description Define an option alias name.
