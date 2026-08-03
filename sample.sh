@@ -3,73 +3,119 @@
 # Released under the MIT licence: http://opensource.org/licenses/mit-license
 
 source $(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}")) >/dev/null 2>&1 && pwd)/lib/neobash.sh
-nb::import "util/*"
-nb::require "util/series.sh"
 
-# my main function
-myfunc() {
-    log::info "MyPID: $$"
+# set your original library path
+# nb::add_lib_path "path/your/dir"
 
-    # sample for library manipulation
+# check command
+nb::command_check "column"
+
+# main function
+main() {
+    # init core/arg.sh lib
+    core::arg::init_local
+    # define required options "-a" and "--aoption" as string
+    core::arg::add_option       -l "ARG_A" -o "-a" -t "string" -r "true"         -h "This is -a string option.\nYou can inseart line break."
+    core::arg::add_option_alias -l "ARG_A" -o "--aoption"
+    # define optional option "-b" as int as default=0
+    core::arg::add_option       -l "ARG_B" -o "-b" -t "int"    -r "false" -d "0" -h "This is -b int option with default."
+    # define optional option "-c" as bool
+    core::arg::add_option       -l "ARG_C" -o "-c" -t "bool"   -r "false"        -h "This is -c bool option with no default."
+    # define flag "-d"
+    core::arg::add_option       -l "ARG_D" -o "-d" -s "true"                     -h "Thin is -d flag. ARG_D will be true if it's set."
+
+    # define help message
+    core::arg::add_help_header "This is sample.sh for neobash.\n"
+    core::arg::add_help_header "You can use it to read 'source lib/neobash.sh' command.\n"
+    core::arg::add_help_header "\nUsage:\n"
+    # define help message prefix
+    core::arg::set_help_prefix "   "
+    # define script version
+    core::arg::add_version "1.0"
+    # parse args
+    core::arg::parse "$@"
+
+    echo "#### Demo for arguments parser ####"
+    echo "##### Show all options and flags for main()"
+    core::arg::get_all_option | column -s, -t
+    echo "#### Show all labels and values for main()"
+    core::arg::get_all_value
+
+    echo
+    echo "#### Demo for logging functions ####"
+    core::log::info   "Arg values is -a ${ARGS[ARG_A]}, -b ${ARGS[ARG_B]}, -c ${ARGS[ARG_C]}, -d is ${ARGS[ARG_D]}"
+    core::log::notice "This is notice log"
+    core::log::warn   "This is warn log"
+    core::log::error  "This is error log"
+    core::log::debug  "This is debug log"
+    # use alias for logging functions
+    log::info         "Thins is alias for core::log::info()"
+
+    echo
+    # Catch Stderr output automatically and outputs its as log
+    echo "#### Demo for executing 'ls /foobar' and catching its outputs and signal 'SIGERR' ####"
+    ls /foobar
+
+    echo
+    echo "#### Demo for core::log::stack_trace() ####"
+    core::log::stack_trace
+
+    echo
+    echo "#### Demo for core::log::echo() and core::log::echo_err() ####"
+    core::log::echo      "This is stdout message"
+    core::log::echo_err  "This is stderr message"
+
+    echo
+    echo "#### Demo for nb::get_libs() to show all imported libraries. ####"
     log::info "imported libs: $(nb::get_libs)"
-    nb::has_lib "core/log.sh"
-    [[ $? -eq 0 ]] && log::info "I have core/log.sh library" || log::info "I have no core/log.sh library"
 
-    # sample for handling args in function
-    arg::init_local
-    arg::add_option -l "ARG_A" -o "-a" -t "string" -r "true"
-    arg::add_option_alias -l "ARG_A" -a "--all"
-    arg::add_option -l "ARG_B" -o "-b" -t "int" -r "false" -s "none" -h "-b option help"
-    arg::add_option -l "ARG_C" -o "-c" -r "false" -s "true"
-    arg::add_option -l "ARG_D" -o "-d" -r "false" -t "int" -d 3
-    arg::add_option -l "ARG_E" -o "-e" -t "string" -r "false" -d ""
-    arg::parse "$@"
+    echo
+    echo "#### Demo for checking whether specified library is imported or not ####"
+    if nb::has_lib "core/log.sh"; then
+        log::info "core/log.sh is imported"
+    else
+        log::info "core/log.sh is not imported"
+    fi
 
-    log::info "Options:\n$( arg::get_all_option )"
+    echo
+    echo "#### Demo for importing util/cmd.sh and call util::cmd::exec() ####"
+    log::info "importing util/cmd.sh"
+    nb::import "util/cmd.sh"
+    local STDOUT
+    local STDERR
+    util::cmd::exec --stdout STDOUT --stderr STDERR -- sub_function
+    log::info "sub_function() stdout is \"$STDOUT\""
+    log::info "sub_function() stderr is \"$STDERR\""
 
-    log::info "get -a value: $( arg::get_value -l "ARG_A" )"
-    log::info "ARGS[ARG_A]:  ${ARGS[ARG_A]}"
-
-    arg::set_value -l "ARG_A" -v "new valueA"
-    log::info "get -a value: $( arg::get_value -l "ARG_A" )"
-    arg::del_value -l "ARG_A"
-    log::info "get -a value: $( arg::get_value -l "ARG_A" )"
-    log::info "args all values:\n$( core::arg::get_all_value )"
-
-    log::info "------ show usage -----"
-    core::arg::show_usage "help: "
-    log::info "-----------------------"
-
-    # check SIGINT (Ctrl-C occurs SIGERR)
-    # sleep 2
-
-    # show error message if command is failed
-    ls /12345
-
-    ### sample for serialization
-    # mystr inclues double quote and linebreak
-    local mystr="str123\"
-    ::str456\""
-    # create ORG as array
-    local ORG=("a1\na2" "b1\nb2" "$mystr")
-    local ORG[50]="505050"
-    # define ENV which receive serialized data
-    local ENC
-    # serialize ORG to ENC
-    util::series::serialize --from ORG --to ENC
-    LOG_ESCAPE_LINE_BREAK=false log::info "original array=\n${ORG[*]}\n"
-    LOG_ESCAPE_LINE_BREAK=false log::info "serialized array=\n$ENC\n"
-    serialized_array_receiver "$ENC"
+    echo
+    echo "#### Demo for array serialization ####"
+    nb::import "util/series.sh"
+    local ARRAY_ORG=("a1" "a2" "a3")
+    local ARRAY_SERIALIZED
+    util::series::serialize --from ARRAY_ORG --to ARRAY_SERIALIZED
+    echo -e "ARRAY_ORG=\n${ARRAY_ORG[*]}\n"
+    echo -e "ARRAY_SERIALIZED=\n$ARRAY_SERIALIZED\n"
+    serialized_array_receiver "$ARRAY_SERIALIZED"
 
     return 0
 }
 
-serialized_array_receiver() {
-    local arg="$1"
-    local -a DEC
-    util::series::deserialize --from arg --to DEC
-    LOG_ESCAPE_LINE_BREAK=false log::info "descerialized array=\n${DEC[*]}"
+# function for util/cmd.sh
+sub_function() {
+    echo "This is stdout in sub()"
+    echo "This is stderr in sub()" >&2
 }
 
-myfunc --all "valueA" -c  -d 5 -e "" -- -b 65535
-log::notice "End of myfunc"
+# function for serialization
+serialized_array_receiver() {
+    local ARRAY_SERIALIZED="$1"
+    local -a ARRAY_DECODED
+
+    # check util/series.sh is imported or not
+    nb::require "util/series.sh"
+
+    util::series::deserialize --from ARRAY_SERIALIZED --to ARRAY_DECODED
+    echo -e "ARRAY_DECODED=\n${ARRAY_DECODED[*]}"
+}
+
+main "$@"
