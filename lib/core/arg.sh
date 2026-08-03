@@ -551,54 +551,6 @@ core::arg::set_value() {
     CORE_ARG_VALUE["$LABEL"]="$VALUE"
 }
 
-# @description Delete a value and set default.
-# * Alias is defined as ``arg::del_value``
-# * If option type is string, value set empty string if default value is not set.
-# * If option type is int, value set 0 if default value is not set.
-# * If option type is bool, value set false if default value is not set.
-#
-# @option -l <value> (string)(required): Label defined by ``arg::add_option``
-# @stdout None.
-# @stderr Error and debug message.
-# @exitcode 0 If successfull.
-# @exitcode 1 If failed.
-core::arg::del_value() {
-    local LABEL
-    local OPTIND
-    local OPTARG
-    local opt
-    local options=":l:v:"
-    while getopts "$options" opt; do
-        case "$opt" in
-        l)
-            LABEL="$OPTARG"
-            ;;
-        \?)
-            core::log::error_exit "invalid option: -$OPTARG"
-            ;;
-        :)
-            core::log::error_exit "option -$OPTARG requires an argument"
-        esac
-    done
-    [[ -z "${LABEL:-}" ]] && core::log::error_exit "label(-l) is required"
-
-    if ! __core::arg::has_label__ "$LABEL"; then
-        core::log::error_exit "label \"$LABEL\" dose not defined"
-    fi
-    case ${CORE_ARG_TYPE["$LABEL"]} in
-        string) core::log::debug "reset the value of \${ARGS[$LABEL]} (string) to its default"
-                CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
-                ;;
-        int)    core::log::debug "reset the value of \${$LABEL} (int) to its default"
-                CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
-                ;;
-        bool)   core::log::debug "reset the value of \${$LABEL} (bool) to its default"
-                CORE_ARG_VALUE["$LABEL"]=${CORE_ARG_DEFAULT["$LABEL"]}
-                ;;
-        *) core::log::crit "invalid type: ${CORE_ARG_TYPE[$LABEL]}";;
-    esac
-}
-
 # @description Show all values after ``core::arg::parse`` is called.
 # * Alias is defined as ``arg::get_all_value``
 # @stdout All labels and their values.
@@ -754,7 +706,6 @@ alias arg::add_option_alias='core::arg::add_option_alias'
 alias arg::parse='core::arg::parse'
 alias arg::get_value='core::arg::get_value'
 alias arg::set_value='core::arg::set_value'
-alias arg::del_value='core::arg::del_value'
 alias arg::get_all_value='core::arg::get_all_value'
 alias arg::get_all_option='core::arg::get_all_option'
 alias arg::show_usage='core::arg::show_usage'

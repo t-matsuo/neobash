@@ -34,12 +34,12 @@ args::init_local
 * [core::arg::parse](#coreargparse)
 * [core::arg::get_value](#corearggetvalue)
 * [core::arg::set_value](#coreargsetvalue)
-* [core::arg::del_value](#coreargdelvalue)
 * [core::arg::get_all_value](#corearggetallvalue)
 * [core::arg::get_all_option](#corearggetalloption)
 * [core::arg::show_usage](#coreargshowusage)
 * [core::arg::set_help_prefix](#coreargsethelpprefix)
 * [core::arg::add_help_header](#coreargaddhelpheader)
+* [core::arg::add_version](#coreargaddversion)
 
 ### core::arg::add_option
 
@@ -107,7 +107,11 @@ Define an option alias name.
 
 * **-a \<value\>**
 
-  (string)(optional): Option alias name such as ``--m`` for ``--myarg``.
+  (string)(required): Option alias name such as ``--m`` for ``--myarg``. (deplcated) use -o option
+
+* **-o \<value\>**
+
+  (string)(required): Option alias name such as ``--m`` for ``--myarg``.
 
 #### Exit codes
 
@@ -194,33 +198,6 @@ Update a value.
 * **-v \<value\>**
 
   (string)(optional): New value.
-
-#### Exit codes
-
-* **0**: If successfull.
-* **1**: If failed.
-
-#### Output on stdout
-
-* None.
-
-#### Output on stderr
-
-* Error and debug message.
-
-### core::arg::del_value
-
-Delete a value and set default.
-* Alias is defined as ``arg::del_value``
-* If option type is string, value set empty string if default value is not set.
-* If option type is int, value set 0 if default value is not set.
-* If option type is bool, value set false if default value is not set.
-
-#### Options
-
-* **-l \<value\>**
-
-  (string)(required): Label defined by ``arg::add_option``
 
 #### Exit codes
 
@@ -324,6 +301,28 @@ Add help header
 #### Arguments
 
 * **$1** ((string):): header string
+
+#### Exit codes
+
+* **0**: If successfull.
+* **1**: If failed.
+
+#### Output on stdout
+
+* None
+
+#### Output on stderr
+
+* None
+
+### core::arg::add_version
+
+Add version
+* Alias is defined as ``arg::add_version``
+
+#### Arguments
+
+* **$1** ((string):): version string
 
 #### Exit codes
 

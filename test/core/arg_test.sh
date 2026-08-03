@@ -88,19 +88,6 @@ test_core::arg::add_option_normal() {
     core::arg::set_value -l "ARG_E" -v "890"
     core::arg::set_value -l "ARG_F" -v "EEEE"
 
-    core::arg::del_value -l 'ARG_A'
-    core::arg::del_value -l 'ARG_B'
-    core::arg::del_value -l 'ARG_C'
-    core::arg::del_value -l 'ARG_D'
-    core::arg::del_value -l 'ARG_E'
-    core::arg::del_value -l 'ARG_F'
-    assert_same    ""      "$(core::arg::get_value -l 'ARG_A')"
-    assert_same    "123"   "$(core::arg::get_value -l 'ARG_B')"
-    assert_same    "false" "$(core::arg::get_value -l 'ARG_C')"
-    assert_same    "true"  "$(core::arg::get_value -l 'ARG_D')"
-    assert_same    "567"   "$(core::arg::get_value -l 'ARG_E')"
-    assert_same    "eeee"  "$(core::arg::get_value -l 'ARG_F')"
-
     assert_matches "$TMP_ARG" "${ARG_OTHERS[*]}"
 
     assert_exit_code 0 $(__core::arg::is_option__ "-t")
