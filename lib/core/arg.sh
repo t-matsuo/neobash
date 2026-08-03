@@ -637,18 +637,18 @@ core::arg::get_all_option() {
     echo -n "long option,"
     echo -n "type,"
     echo -n "required,"
-    echo -n "help message,"
     echo -n "store,"
-    echo    "default"
+    echo -n "default,"
+    echo    "help message,"
     for label in $CORE_ARG_LABEL; do
         echo -n "$label,"
         echo -n "${CORE_ARG_OPTION_SHORT["$label"]:-},"
         echo -n "${CORE_ARG_OPTION_LONG["$label"]:-},"
         echo -n "${CORE_ARG_TYPE[$label]},"
         echo -n "${CORE_ARG_REQUIRED[$label]},"
-        echo -n "\"${CORE_ARG_HELP[$label]}\","
         echo -n "${CORE_ARG_STORE[$label]},"
-        echo    "\"${CORE_ARG_DEFAULT[$label]:-}\""
+        echo -n "\"${CORE_ARG_DEFAULT[$label]:-}\","
+        echo    "\"${CORE_ARG_HELP[$label]}\""
     done
 }
 
