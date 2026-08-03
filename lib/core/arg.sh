@@ -441,7 +441,7 @@ core::arg::parse() {
             __core::arg::check_value_type__ "$type" "$next_arg" || exit 1
 
             CORE_ARG_VALUE["$label"]="$next_arg"
-            core::log::debug "\${ARGS[$label]}=\"$next_arg\""
+            # core::log::debug "\${ARGS[$label]}=\"$next_arg\""
             skip=true
             continue
         else
@@ -471,7 +471,7 @@ core::arg::parse() {
         # set default value if value is not set
         if [[ ${CORE_ARG_REQUIRED["$label"]} == "false" && -z ${CORE_ARG_VALUE["$label"]:-} ]]; then
             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
-            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default)"
+            # core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default)"
          fi
     done
 }
