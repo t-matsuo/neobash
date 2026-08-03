@@ -118,7 +118,7 @@ __core::arg::has_option__() {
 core::arg::add_option() {
     local LABEL
     local OPTION
-    local TYPE="string"
+    local TYPE=""
     local REQUIRED="false"
     local HELP="no help message"
     local STORE="none"
@@ -127,6 +127,7 @@ core::arg::add_option() {
     local OPTARG
     local opt
     local options=":l:o:t:r:h:s:d:"
+
     while getopts "$options" opt; do
         case "$opt" in
         l)
@@ -164,12 +165,18 @@ core::arg::add_option() {
     [[ -z "${OPTION:-}" ]] && core::log::error_exit "$LABEL option(-o) is required"
     [[ ! "$OPTION" =~ ^-{1,2}[a-zA-Z]$ && ! "$OPTION" =~ ^--[a-zA-Z] ]] \
         && core::log::error_exit "\"$OPTION\" must start with \"-\" or \"--\", and \"-\" require 1 character"
-    [[ -z "${TYPE:-}" ]] && core::log::error_exit "$OPTION type(-t) is required"
-    [[ "$TYPE" != "string" && "$TYPE" != "int" && "$TYPE" != "bool" ]] \
-        && core::log::error_exit "invalid type \"$TYPE\", $OPTION type(-t) needs 'string' or 'int' or 'bool'"
-    [[ "$REQUIRED" != "true" && "$REQUIRED" != "false" ]] && core::log::error_exit "invalid required \"$REQUIRED\", $OPTION required(-r) needs 'true' or 'false'"
+    [[ "$REQUIRED" != "true" && "$REQUIRED" != "false" ]] \
+        && core::log::error_exit "invalid required \"$REQUIRED\", $OPTION required(-r) needs 'true' or 'false'"
     [[ "$STORE" != "none" && "$STORE" != "true" && "$STORE" != "false" ]] \
-        && core::log::error_exit "invalid store \"$STORE\", $OPTION store(-o) needs 'none' or 'true' or 'false'"
+        && core::log::error_exit "invalid store \"$STORE\", store(-s) needs 'true' or 'false'"
+    [[ "$REQUIRED" == "true" && "$STORE" != "none" ]] \
+        && core::log::error_exit "The required(-r) $REQUIRED and store(-s) $STORE options cannot be used simultaneously."
+    [[ -n "$DEFAULT" && "$STORE" != "none" ]] \
+        && core::log::error_exit "The default(-d) $DEFAULT and store(-s) $STORE options cannot be used simultaneously."
+    [[ "$STORE" != "none" ]] && [[ "$TYPE" == "string" || "$TYPE" == "int" ]] \
+        && core::log::error_exit "The type(-t) $TYPE and store(-s) $STORE options cannot be used simultaneously."
+
+    # set default for -s option
     if [[ "$STORE" == "true" ]]; then
         TYPE="bool"
         DEFAULT="false"
@@ -178,6 +185,13 @@ core::arg::add_option() {
         TYPE="bool"
         DEFAULT="true"
     fi
+
+    # check type
+    if [[ -z "${TYPE:-}" ]]; then
+        TYPE="string"
+    fi
+    [[ "$TYPE" != "string" && "$TYPE" != "int" && "$TYPE" != "bool" ]] \
+        && core::log::error_exit "invalid type \"$TYPE\", $OPTION type(-t) needs 'string' or 'int' or 'bool'"
 
     # check label
     __core::arg::has_label__ "$LABEL" && core::log::error_exit "label \"$LABEL\" already exists"
@@ -188,13 +202,17 @@ core::arg::add_option() {
     # check default
     if [[ "$TYPE" == "int" ]]; then
         if [[ -n "${DEFAULT:-}" ]]; then
-            [[ ! "$DEFAULT" =~ ^[0-9]+$ ]] && core::log::error_exit "$OPTION default \"$DEFAULT\" must be an integer"
+            [[ ! "$DEFAULT" =~ ^[0-9]+$ ]] && core::log::error_exit "$OPTION default(-d) \"$DEFAULT\" must be an integer"
+        else
+            DEFAULT="0"
         fi
     fi
     if [[ "$TYPE" == "bool" ]]; then
         if [[ -n "${DEFAULT:-}" ]]; then
             [[ "$DEFAULT" != "true" && "$DEFAULT" != "false" ]] \
                 && core::log::error_exit "$OPTION default \"$DEFAULT\" must be \"true\" or \"false\""
+        else
+            DEFAULT="false"
         fi
     fi
 
@@ -211,7 +229,9 @@ core::arg::add_option() {
     CORE_ARG_REQUIRED["$LABEL"]="$REQUIRED"
     CORE_ARG_HELP["$LABEL"]="$HELP"
     CORE_ARG_STORE["$LABEL"]="$STORE"
-    CORE_ARG_DEFAULT["$LABEL"]="$DEFAULT"
+    if [[ "$REQUIRED" != "true" ]]; then
+        CORE_ARG_DEFAULT["$LABEL"]="$DEFAULT"
+    fi
 }
 
 # @description Define an option alias name.
@@ -453,37 +473,8 @@ core::arg::parse() {
         # set default value if value is not set
         if [[ ${CORE_ARG_REQUIRED["$label"]} == "false" && -z ${CORE_ARG_VALUE["$label"]:-} ]]; then
             CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
-            case ${CORE_ARG_TYPE["$label"]} in
-                string) if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
-                            core::log::debug "\${ARGS[$label]}=\"\" (no default string)"
-                            CORE_ARG_DEFAULT["$label"]=""
-                            CORE_ARG_VALUE["$label"]=""
-                        else
-                            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default string)"
-                            CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
-                        fi
-                        ;;
-                int)    if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
-                            core::log::debug "\${ARGS[$label]}=\"0\" (no default int)"
-                            CORE_ARG_DEFAULT["$label"]="0"
-                            CORE_ARG_VALUE["$label"]="0"
-                        else
-                            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default int)"
-                            CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
-                        fi
-                        ;;
-                bool)   if [[ ! -v CORE_ARG_DEFAULT["$label"] ]]; then
-                            core::log::debug "\${ARGS[$label]}=\"false\" (no default bool)"
-                            CORE_ARG_DEFAULT["$label"]="false"
-                            CORE_ARG_VALUE["$label"]="false"
-                        else
-                            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default bool)"
-                            CORE_ARG_VALUE["$label"]="${CORE_ARG_DEFAULT["$label"]}"
-                        fi
-                        ;;
-                *) core::log::error_exit "invalid type: ${CORE_ARG_TYPE[$label]}";;
-            esac
-        fi
+            core::log::debug "\${ARGS[$label]}=\"${CORE_ARG_DEFAULT["$label"]}\" (default)"
+         fi
     done
 }
 
