@@ -15,14 +15,17 @@ main() {
     # init core/arg.sh lib
     core::arg::init_local
     # define required options "-a" and "--aoption" as string
-    core::arg::add_option       -l "ARG_A" -o "-a" -t "string" -r "true"         -h "This is -a string option.\nYou can inseart line break."
-    core::arg::add_option_alias -l "ARG_A" -o "--aoption"
+    core::arg::add_option       -l "ARG_A" -o "-a" -t "string" -r "true"          -h "This is -a string option.\nYou can inseart line break."
+    core::arg::add_option_alias -l "ARG_A" -o "--a-option"
     # define optional option "-b" as int as default=0
-    core::arg::add_option       -l "ARG_B" -o "-b" -t "int"    -r "false" -d "0" -h "This is -b int option with default."
+    core::arg::add_option       -l "ARG_B" -o "-b" -t "int"    -r "false" -d "0"  -h "This is -b int option with default."
     # define optional option "-c" as bool
-    core::arg::add_option       -l "ARG_C" -o "-c" -t "bool"   -r "false"        -h "This is -c bool option with no default."
+    core::arg::add_option       -l "ARG_C" -o "-c" -t "bool"   -r "false"         -h "This is -c bool option with no default."
     # define flag "-d"
-    core::arg::add_option       -l "ARG_D" -o "-d" -s "true"                     -h "Thin is -d flag. ARG_D will be true if it's set."
+    core::arg::add_option       -l "ARG_D" -o "-d" -s "true"                      -h "Thin is -d flag. ARG_D will be true if it's set."
+    # define flag "-e"
+    core::arg::add_option       -l "ARG_E" -o "--e-option" -t "string" -r "false" -h "This is --e-option string option"
+    core::arg::add_option_alias -l "ARG_E" -o "-e"
 
     # define help message
     core::arg::add_help_header "This is sample.sh for neobash.\n"
@@ -40,6 +43,8 @@ main() {
     core::arg::get_all_option | column -s, -t
     echo "#### Show all labels and values for main()"
     core::arg::get_all_value
+
+exit 0
 
     echo
     echo "#### Demo for logging functions ####"

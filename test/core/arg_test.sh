@@ -8,6 +8,7 @@ set_up() {
 test_core::arg::add_option_normal() {
   local TMP_ARG='-x "valueX" --argy 456'
   local TMP_VERSION='1.0.0'
+  local STR_REQ_VALUE="aaaa"
 
   core::arg::add_option_normal_func() {
     # Cannot use alias core::arg::init_local here, so define manually.
@@ -30,13 +31,13 @@ test_core::arg::add_option_normal() {
     # required is true
     core::arg::add_option -l "STR_REQ"  -o "--str-req"  -t "string" -r "true"
     core::arg::add_option -l "INT_REQ"  -o "--int-req"  -t "int"    -r "true"
-    core::arg::add_option -l "BOOL_REQ" -o "--bool-req" -t "bool"   -r "true"
+    core::arg::add_option -l "BOOL_REQ" -o "-b"         -t "bool"   -r "true"
     assert_exit_code 0 $?
 
     # alias for above
     core::arg::add_option_alias  -l "STR_REQ"  -o "-s"
     core::arg::add_option_alias  -l "INT_REQ"  -o "-i"
-    core::arg::add_option_alias  -l "BOOL_REQ" -o "-b"
+    core::arg::add_option_alias  -l "BOOL_REQ" -o "--bool-req"
     assert_exit_code 0 $?
 
     # required is false and default is empty
@@ -130,7 +131,7 @@ test_core::arg::add_option_normal() {
     assert_matches "false" "${CORE_ARG_STORE["STORE_FALSE"]}"
 
     # check value
-    assert_matches "aaaa"  "${ARGS["STR_REQ"]}"
+    assert_matches "${STR_REQ_VALUE}"  "${ARGS["STR_REQ"]}"
     assert_matches "3"     "${ARGS["INT_REQ"]}"
     assert_matches "true"  "${ARGS["BOOL_REQ"]}"
     assert_matches ""      "${ARGS["STR_NO_DEF"]}"
@@ -163,7 +164,13 @@ test_core::arg::add_option_normal() {
   core::arg::add_option_normal_func --str-req "aaaa" --int-req 3 --bool-req true -- $TMP_ARG
   assert_matches "$TMP_VERSION" $( core::arg::add_option_normal_func -v )
   assert_matches "$TMP_VERSION" $( core::arg::add_option_normal_func --version )
-  assert_exit_code 0 $( core::arg::add_option_normal_func --str-req "aaaa" --int-req 3 --bool-req true -- $TMP_ARG )
+  assert_exit_code 0 $( core::arg::add_option_normal_func --str-req "aaaa"           --int-req 3 --bool-req true -- $TMP_ARG )
+  assert_exit_code 1 $( core::arg::add_option_normal_func --str-req "$STR_REQ_VALUE" --int-req   --bool-req true -- $TMP_ARG )
+  assert_exit_code 1 $( core::arg::add_option_normal_func --str-req "$STR_REQ_VALUE" --int-req 3 --bool-req      -- $TMP_ARG )
+  assert_exit_code 1 $( core::arg::add_option_normal_func --str-req "$STR_REQ_VALUE" --int-req 3 --bool-req true --str-no-def      -- $TMP_ARG )
+  assert_exit_code 0 $( core::arg::add_option_normal_func --str-req "$STR_REQ_VALUE" --int-req 3 --bool-req true --str-no-def ""   -- $TMP_ARG )
+  assert_exit_code 0 $( core::arg::add_option_normal_func --str-req "$STR_REQ_VALUE" --int-req 3 --bool-req true --str-no-def "-"  -- $TMP_ARG )
+  assert_exit_code 1 $( core::arg::add_option_normal_func --str-req "$STR_REQ_VALUE" --int-req 3 --bool-req true --str-no-def "--" -- $TMP_ARG )
   assert_exit_code 0 $( core::arg::add_option_normal_func -s "aaaa" -i 3 -b true -- $TMP_ARG )
   assert_exit_code 0 $( core::arg::add_option_normal_func --str-req "aaaa" --int-req 3 --bool-req true --store-true -- $TMP_ARG )
   assert_exit_code 0 $( core::arg::add_option_normal_func --str-req "aaaa" --int-req 3 --bool-req true --store-false -- $TMP_ARG )

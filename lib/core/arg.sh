@@ -163,8 +163,8 @@ core::arg::add_option() {
     [[ -z "${LABEL:-}" ]] && core::log::error_exit "label(-l) is required"
     [[ "$LABEL" =~ " " ]] && core::log::error_exit "$LABEL must not contain spaces"
     [[ -z "${OPTION:-}" ]] && core::log::error_exit "$LABEL option(-o) is required"
-    [[ ! "$OPTION" =~ ^-{1,2}[a-zA-Z]$ && ! "$OPTION" =~ ^--[a-zA-Z] ]] \
-        && core::log::error_exit "\"$OPTION\" must start with \"-\" or \"--\", and \"-\" require 1 character"
+    [[ ! "$OPTION" =~ ^-{1,2}[a-zA-Z]$ && ! "$OPTION" =~ ^--[a-zA-Z][a-zA-Z0-9-]+$ ]] \
+        && core::log::error_exit "\"$OPTION\" must be starting with \"-\" or \"--\", and \"-\" requires 1 character. Long option name must be regex [a-zA-Z][a-zA-Z0-9-]+$"
     [[ "$REQUIRED" != "true" && "$REQUIRED" != "false" ]] \
         && core::log::error_exit "invalid required \"$REQUIRED\", $OPTION required(-r) needs 'true' or 'false'"
     [[ "$STORE" != "none" && "$STORE" != "true" && "$STORE" != "false" ]] \
@@ -271,8 +271,8 @@ core::arg::add_option_alias() {
     done
     [[ -z "${LABEL:-}" ]] && core::log::error_exit "label(-l) is required"
     [[ -z "${ALIAS:-}" ]] && core::log::error_exit "$LABEL alias(-o) is required"
-    [[ ! "$ALIAS" =~ ^-{1,2}[a-zA-Z]$ && ! "$ALIAS" =~ ^--[a-zA-Z] ]] \
-        && core::log::error_exit "\"$ALIAS\" must not start with \"-\" or \"--\", and \"-\" require 1 character"
+    [[ ! "$ALIAS" =~ ^-{1,2}[a-zA-Z]$ && ! "$ALIAS" =~ ^--[a-zA-Z][a-zA-Z0-9-]+$ ]] \
+        && core::log::error_exit "\"$ALIAS\" must be starting with \"-\" or \"--\", and \"-\" requires 1 character. Long option name must be regex [a-zA-Z][a-zA-Z0-9-]+$"
 
     # check label
     __core::arg::has_label__ "$LABEL" || core::log::error_exit "label \"$LABEL\" dose not exist"
@@ -317,7 +317,6 @@ __core::arg::check_value_type__() {
     local TYPE="$1"
     local VALUE="$2"
     [[ -z "${TYPE:-}" ]] && core::log::error_exit "TYPE is empty"
-    [[ "${TYPE:-}" != "string" ]] && [[ -z "${VALUE:-}" ]] && core::log::error_exit "VALUE is empty"
     [[ "$TYPE" != "string" && "$TYPE" != "int" && "$TYPE" != "bool" ]] \
         && core::log::error_exit "type \"$TYPE\" is invalid"
 
@@ -328,6 +327,7 @@ __core::arg::check_value_type__() {
         [[ "$VALUE" != "true" && "$VALUE" != "false" ]] \
             && core::log::error_exit "value \"$VALUE\" must be \"true\" or \"false\""
     fi
+    [[ "${TYPE:-}" != "string" ]] && [[ -z "${VALUE:-}" ]] && core::log::error_exit "value is empty"
     return 0
 }
 
@@ -429,12 +429,12 @@ core::arg::parse() {
             if [[ -v PARSE_ARGS[$(( $num + 1 ))] ]]; then
                 next_arg="${PARSE_ARGS[$(( $num + 1 ))]}"
             else
-                core::log::error_exit "$arg value is empty"
+                core::log::error_exit "$arg needs ${CORE_ARG_TYPE["$label"]} value"
             fi
             # core::log::debug "next_arg: $next_arg"
-            __core::arg::is_option__ "$next_arg" && core::log::error_exit "$arg value is empty"
-            [[ "$next_arg" == "--" ]] && core::log::error_exit "$arg value is empty"
-            [[ -n ${CORE_ARG_VALUE["$label"]:-} ]] && core::log::error_exit "$arg value is already set"
+            [[ "$next_arg" == "--" ]] && core::log::error_exit "$arg needs ${CORE_ARG_TYPE["$label"]} value"
+            __core::arg::is_option__ "$next_arg" && core::log::error_exit "$arg needs ${CORE_ARG_TYPE["$label"]} value"
+            [[ -n ${CORE_ARG_VALUE["$label"]:-} ]] && core::log::error_exit "$arg value is already set '${CORE_ARG_VALUE["$label"]}'"
 
             # check value type
             type="${CORE_ARG_TYPE["$label"]}"
@@ -465,7 +465,7 @@ core::arg::parse() {
         # core::log::debug "checking \${ARGS[$label]} value ($option)"
 
         # check required value is set
-        [[ ${CORE_ARG_REQUIRED["$label"]} == "true" && -z ${CORE_ARG_VALUE["$label"]:-} ]] \
+        [[ ${CORE_ARG_REQUIRED["$label"]} == "true" && ! -v CORE_ARG_VALUE["$label"] ]] \
              && core::log::error_exit "required option \"$option\" is not set"
 
         # set default value if value is not set
