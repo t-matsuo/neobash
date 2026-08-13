@@ -70,11 +70,16 @@ datadog::api::delete() {
 }
 
 datadog::init() {
-    [[ "${DATADOG_API_HOST}" == "" ]] && log::error_exit "DATADOG_API_HOST Env is not set"
-    [[ "${DATADOG_API_KEY}" == "" ]] && log::error_exit "DATADOG_API_KEY Env is not set"
-    [[ "${DATADOG_APPLICATION_KEY}" == "" ]] && log::error_exit "DATADOG_APPLICATION_KEY Env is not set"
-    DATADOG_API_HEADER=("--header" "DD-API-KEY: ${DATADOG_API_KEY}"
-                        "--header" "DD-APPLICATION-KEY: ${DATADOG_APPLICATION_KEY}")
+    [[ "${DATADOG_API_HOST}" == "" ]] && log::error_exit "DATADOG_API_HOST environment variable is not set"
+
+    if [[ -n "${DATADOG_ACCESS_TOKEN:-}" ]]; then
+        DATADOG_API_HEADER=("--header" "Authorization: Bearer ${DATADOG_ACCESS_TOKEN}")
+    elif [[ -n "${DATADOG_API_KEY:-}" && -n "${DATADOG_APPLICATION_KEY:-}" ]]; then
+        DATADOG_API_HEADER=("--header" "DD-API-KEY: ${DATADOG_API_KEY}"
+                            "--header" "DD-APPLICATION-KEY: ${DATADOG_APPLICATION_KEY}")
+    else
+        log::error_exit "Datadog library requires DATADOG_ACCESS_TOKEN, or DATADOG_APPLICATION_KEY & DATADOG_API_KEY environment variables."
+    fi
     return 0
 }
 
