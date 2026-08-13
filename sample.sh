@@ -44,8 +44,6 @@ main() {
     echo "#### Show all labels and values for main()"
     core::arg::get_all_value
 
-exit 0
-
     echo
     echo "#### Demo for logging functions ####"
     core::log::info   "Arg values is -a ${ARGS[ARG_A]}, -b ${ARGS[ARG_B]}, -c ${ARGS[ARG_C]}, -d is ${ARGS[ARG_D]}"
