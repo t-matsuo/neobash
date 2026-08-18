@@ -12,7 +12,7 @@ Neobashブートストラップファイル。
 source /path/to/lib/neobash.sh
 ```
 
-本ファイルを読むこむと、自動で全``core``ライブラリがimportされます。
+本ファイルを読み込むと、自動で全``core``ライブラリがimportされます。
 
 ### ライブラリの読み込み
 
