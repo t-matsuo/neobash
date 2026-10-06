@@ -31,7 +31,7 @@ io::qa() {
     local __UTIL_QA_YN_MSG__=""
 
     core::arg::init_local
-    arg::add_option       -l "MESSAGE" -o "--messags" -t "string" -r "false" -d "" -h "message"
+    arg::add_option       -l "MESSAGE" -o "--message" -t "string" -r "false" -d "" -h "message"
     arg::add_option_alias -l "MESSAGE" -o "-m"
     arg::add_option       -l "DEFAULT" -o "--default" -t "string" -r "false" -d "n"   -h "default value. y/Y/yes or n/N/no or q/Q/quit"
     arg::add_option_alias -l "DEFAULT" -o "-d"
