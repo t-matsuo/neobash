@@ -1,3 +1,11 @@
+# markdown/table.sh
+
+csv to markdown table
+
+## Overview
+
+convert csv to markdown table
+
 ## Index
 
 * [markdown::csv2table](#markdowncsv2table)
@@ -19,6 +27,18 @@ Convert csv to markdown table
 * **--line-break \<string\>**
 
   replacement string for line breaks in quoted csv fields (default: <br>)
+
+* **--cell-max-width \<int\>**
+
+  max cell width after conversion, 0 means unlimited, must be >=5 if >0 (default: 0)
+
+* **--table-max-byte \<int\>**
+
+  max byte size per table output, 0 means unlimited (default: 0)
+
+* **--table-max-line \<int\>**
+
+  max data lines per table output, 0 means unlimited (default: 0)
 
 #### Exit codes
 
