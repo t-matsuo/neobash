@@ -16,6 +16,10 @@ Convert csv to markdown table
 
   table data csv (required)
 
+* **--line-break \<string\>**
+
+  replacement string for line breaks in quoted csv fields (default: <br>)
+
 #### Exit codes
 
 * 0
