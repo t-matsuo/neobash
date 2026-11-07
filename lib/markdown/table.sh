@@ -124,6 +124,7 @@ __markdown::field_count() {
 # @option --cell-max-width <int> max cell width after conversion, 0 means unlimited, must be >=5 if >0 (default: 0)
 # @option --table-max-byte <int> max byte size per table output, 0 means unlimited (default: 0)
 # @option --table-max-line <int> max data lines per table output, 0 means unlimited (default: 0)
+# @option --page-break <string> replacement string for page breaks (default: <!-- page %page/%total -->)
 # @stdout table
 # @stderr None
 # @exitcode 0
@@ -140,12 +141,14 @@ markdown::csv2table() {
     arg::add_option -l "CELL_MAX_WIDTH" -o "--cell-max-width" -t "int" -r "false" -d "0" -h "max cell width after conversion, 0 means unlimited, must be >=5 if >0"
     arg::add_option -l "TABLE_MAX_BYTE" -o "--table-max-byte" -t "int" -r "false" -d "0" -h "max byte size per table output, 0 means unlimited"
     arg::add_option -l "TABLE_MAX_LINE" -o "--table-max-line" -t "int" -r "false" -d "0" -h "max data lines per table output, 0 means unlimited"
+    arg::add_option -l "PAGE_BREAK" -o "--page-break" -t "string" -r "false" -d "<!-- page %page/%total -->" -h "page separator string, %page and %total are replaced"
     arg::parse "$@"
 
     LINE_BREAK="${ARGS[LINE_BREAK]}"
     CELL_MAX_WIDTH="${ARGS[CELL_MAX_WIDTH]}"
     TABLE_MAX_BYTE="${ARGS[TABLE_MAX_BYTE]}"
     TABLE_MAX_LINE="${ARGS[TABLE_MAX_LINE]}"
+    local PAGE_BREAK="${ARGS[PAGE_BREAK]}"
 
     if (( CELL_MAX_WIDTH > 0 && CELL_MAX_WIDTH < 5 )); then
         log::error_exit "--cell-max-width must be >= 5 or 0"
@@ -248,9 +251,12 @@ markdown::csv2table() {
 
     local total_pages=${#PAGES[@]}
     local p
+    local break_str
     for ((p = 0; p < total_pages; p++)); do
         if (( p > 0 )); then
-            printf '# ----page %d/%d----\n' "$((p + 1))" "$total_pages"
+            break_str="${PAGE_BREAK//%page/$((p + 1))}"
+            break_str="${break_str//%total/$total_pages}"
+            printf '%s\n' "$break_str"
         fi
         printf '%s' "$header_block"
         printf '%s' "${PAGES[p]}"

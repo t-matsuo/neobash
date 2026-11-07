@@ -133,7 +133,7 @@ test_csv2table::test_13_max_table_byte_split() {
     assert_equals '| a | b |
 | -- | -- |
 | 11111 | 22222 |
-# ----page 2/2----
+<!-- page 2/2 -->
 | a | b |
 | -- | -- |
 | 33333 | 44444 |' "$OUTPUT"
@@ -148,7 +148,7 @@ test_csv2table::test_14_max_table_line_split() {
 | -- | -- |
 | 1 | 2 |
 | 3 | 4 |
-# ----page 2/2----
+<!-- page 2/2 -->
 | a | b |
 | -- | -- |
 | 5 | 6 |
@@ -163,11 +163,11 @@ test_csv2table::test_15_combined_cell_max_and_line() {
     assert_equals '| a | b |
 | -- | -- |
 | 111... | 222... |
-# ----page 2/3----
+<!-- page 2/3 -->
 | a | b |
 | -- | -- |
 | 333... | 444... |
-# ----page 3/3----
+<!-- page 3/3 -->
 | a | b |
 | -- | -- |
 | 555... | 666... |' "$OUTPUT"
@@ -182,18 +182,32 @@ test_csv2table::test_16_both_byte_and_line_limits() {
     assert_equals '| a | b |
 | -- | -- |
 | 1 | 2 |
-# ----page 2/4----
+<!-- page 2/4 -->
 | a | b |
 | -- | -- |
 | 3 | 4 |
-# ----page 3/4----
+<!-- page 3/4 -->
 | a | b |
 | -- | -- |
 | 5 | 6 |
-# ----page 4/4----
+<!-- page 4/4 -->
 | a | b |
 | -- | -- |
 | 7 | 8 |' "$OUTPUT"
+}
+
+test_csv2table::test_18_custom_page_break() {
+    local OUTPUT
+
+    OUTPUT=$(markdown::csv2table --header 'a,b' --data $'1,2\n3,4' --table-max-line '1' --page-break '--- %page / %total ---')
+    assert_exit_code "0"
+    assert_equals '| a | b |
+| -- | -- |
+| 1 | 2 |
+--- 2 / 2 ---
+| a | b |
+| -- | -- |
+| 3 | 4 |' "$OUTPUT"
 }
 
 test_csv2table::test_17_cell_max_width_exact() {

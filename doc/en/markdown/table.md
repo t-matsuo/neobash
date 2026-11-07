@@ -40,6 +40,10 @@ Convert csv to markdown table
 
   max data lines per table output, 0 means unlimited (default: 0)
 
+* **--page-break \<string\>**
+
+  replacement string for page breaks (default: <!-- page %page/%total -->)
+
 #### Exit codes
 
 * 0
