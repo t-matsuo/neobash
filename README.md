@@ -1,20 +1,100 @@
 # Neobash
 
-Framework for bash script and libraries.
+<div align="center">
+
+![Colorized terminal output sample](sample_color_term.png)
+
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Bash: 4.2+](https://img.shields.io/badge/bash-4.2%2B-green.svg)
+</div>
+
+A modular Bash scripting framework that brings structured logging, automatic CLI argument parsing, library management, and built-in integrations to your shell scripts.
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Sample](#sample)
+- [Library Documentation](#library-documentation)
+- [Directory Structure](#directory-structure)
+- [License](#license)
+- [Author](#author)
+
+## Features
+
+- **Argument Parser** (`core/arg.sh`) — Define options, flags, types, defaults, and required parameters with a concise API. Automatically generates `--help` and `--version` output.
+- **Structured Logging** (`core/log.sh`) — Leveled logging (DEBUG, INFO, NOTICE, WARN, ERROR, CRIT) with colorized terminal output, optional JSON format, per-function/file debug filtering, and stack traces.
+- **Library Manager** (`neobash.sh`) — Modular `import` / `require` system for loading libraries on demand. Supports custom library paths via `nb::add_lib_path`.
+- **Command Execution Wrapper** (`util/cmd.sh`) — Run sub-commands with captured stdout/stderr, timeouts, and exit-code handling.
+- **Error Handling** (`util/catch-err.sh`) — Trap `SIGERR` and unexpected return codes with automatic logging.
+- **Array Serialization** (`util/series.sh`) — Serialize and deserialize Bash arrays using base64 encoding.
+- **Built-in Integrations** — Ready-to-use helpers for Slack, Mattermost, Datadog, cURL, Markdown tables, OS detection, string utilities, and interactive Q&A.
+
+## Requirements
+
+- **Bash 4.2** or higher  
+  *(Some libraries such as `util/cmd.sh`, `util/catch-err.sh`, and `util/series.sh` require Bash 4.3+ for `nameref` support.)*
+- External commands used by specific libraries (e.g. `column`, `base64`, `sleep`, `kill`)
+
+## Installation
+
+```bash
+git clone https://github.com/yourusername/neobash.git
+cd neobash
+```
+
+No build step is required. Just source the bootstrap file.
+
+## Quick Start
+
+```bash
+#!/usr/bin/env bash
+source "$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" >/dev/null 2>&1 && pwd)/lib/neobash.sh"
+
+main() {
+    core::arg::init_local
+    core::arg::add_option -l "GREETING" -o "-g" -t "string" -r "true" -h "Greeting message"
+    core::arg::parse "$@"
+
+    core::log::info "Hello, ${ARGS[GREETING]}!"
+}
+
+main "$@"
+```
+
+Run it:
+
+```bash
+./quickstart.sh -g "World"
+```
 
 ## Usage
 
-```bash
-source lib/neobash.sh
-```
+The typical workflow is:
 
-## Library Documentation
+1. **Bootstrap** — Source `lib/neobash.sh` at the top of your script.
+2. **Import libraries** — Use `nb::import "name"` or rely on the auto-loaded core libraries (`core/log.sh`, `core/arg.sh`).
+3. **Define CLI** — Use `core::arg::*` functions to declare options and flags.
+4. **Parse** — Call `core::arg::parse "$@"` to populate the global `ARGS` associative array.
+5. **Log & run** — Use `core::log::info`, `core::log::warn`, etc. and normal script logic.
 
-[Documentation](doc/README.md)
+### Environment Variables for Logging
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `LOG_DEBUG` | bool | `false` | Print all debug logs |
+| `LOG_DEBUG_FUNC` | string | `""` | Print debug logs only for the specified function names |
+| `LOG_DEBUG_FILE` | string | `""` | Print debug logs only for the specified file names |
+| `LOG_FORMAT` | string | `"plain"` | Select log format: `"plain"` or `"json"` |
 
 ## Sample
 
-* Show help message.
+A fully working example is provided in [`sample.sh`](sample.sh).
+
+### Show help message
 
 ```bash
 ./sample.sh -h
@@ -27,16 +107,17 @@ You can use it to read 'source lib/neobash.sh' command.
 Usage:
 
    ## Options, Flags
-   -a --aoption [string]                (required): This is -a string option.
-                                                    You can inseart line break.
+   -a --a-option [string]               (required): This is -a string option.
+                                                    You can insert line break.
    -b [int]                             (optional): This is -b int option with default.   DEFAULT: "0"
    -c [bool]                            (optional): This is -c bool option with no default.   DEFAULT: "false"
-   -d                                   (flag)    : Thin is -d flag. ARG_D will be true if it's set.
+   -d                                   (flag)    : This is -d flag. ARG_D will be true if it's set.
+   -e --e-option [string]               (optional): This is --e-option string option   DEFAULT: ""
 
    ## Global Flags
    -h, --help                           (flag)    : show help message
    -v, --version                        (flag)    : show version
-   --debug                              (flag)    : print all debug logs but until the the arg is parsed, no debug logs will be shown.
+   --debug                              (flag)    : print all debug logs but until the arg is parsed, no debug logs will be shown.
 
    ## Global Main Environment Variables for logging
    LOG_DEBUG=[bool]                     print all debug logs   DEFAULT: "false"
@@ -45,7 +126,7 @@ Usage:
    LOG_FORMAT=["plain"|"json"]          select log format   DEFAULT: "plain"
 ```
 
-* Run.
+### Run the sample
 
 ```bash
 ./sample.sh -a avalue
@@ -55,15 +136,17 @@ Usage:
 #### Demo for arguments parser ####
 ##### Show all options and flags for main()
 label  short option  long option  type    required  store  default  help message
-ARG_A  -a            --aoption    string  true      none   ""       "This is -a string option.\nYou can inseart line break."
+ARG_A  -a            --a-option   string  true      none   ""       "This is -a string option.\nYou can insert line break."
 ARG_B  -b                         int     false     none   "0"      "This is -b int option with default."
 ARG_C  -c                         bool    false     none   "false"  "This is -c bool option with no default."
-ARG_D  -d                         bool    false     true   "false"  "Thin is -d flag. ARG_D will be true if it's set."
+ARG_D  -d                         bool    false     true   "false"  "This is -d flag. ARG_D will be true if it's set."
+ARG_E  -e            --e-option   string  false     none   ""       "This is --e-option string option"
 #### Show all labels and values for main()
 ARG_A=avalue
 ARG_B=0
 ARG_C=false
 ARG_D=false
+ARG_E=
 OTHER ARGS=
 
 #### Demo for logging functions ####
@@ -73,7 +156,7 @@ OTHER ARGS=
 2026-08-08-15:37:46+0900 ERROR This is error log
 2026-08-08-15:37:46+0900 TRACE main() ./sample.sh:49
 2026-08-08-15:37:46+0900 TRACE   main() ./sample.sh:121
-2026-08-08-15:37:46+0900 INFO Thins is alias for core::log::info()
+2026-08-08-15:37:46+0900 INFO This is alias for core::log::info()
 
 #### Demo for executing 'ls /foobar' and catching its outputs and signal 'SIGERR' ####
 2026-08-08-15:37:46+0900 STDERR ls: cannot access '/foobar': No such file or directory
@@ -116,42 +199,45 @@ a1 a2 a3
 
 In terminal, the log output is colorized.
 
-![putput](sample_color_term.png)
-
-* Run with all debug messages.
+### Run with all debug messages
 
 ```bash
 LOG_DEBUG=true ./sample.sh -a avalue
 ```
 
-```text
-2026-08-08-15:33:32+0900 DEBUG importing library /home/user/neobash/lib/core/log.sh
-2026-08-08-15:33:32+0900 DEBUG library path: /home/user/neobash/lib   [__nb::init__() /home/user/neobash/lib/neobash.sh:231]
-2026-08-08-15:33:32+0900 DEBUG searching library 'core/*' in /home/user/neobash/lib   [nb::import() /home/user/neobash/lib/neobash.sh:44]
-2026-08-08-15:33:32+0900 DEBUG importing library core/arg.sh in /home/user/neobash/lib   [nb::import() /home/user/neobash/lib/neobash.sh:59]
-2026-08-08-15:33:32+0900 DEBUG library 'core/log.sh' already impported   [nb::import() /home/user/neobash/lib/neobash.sh:51]
-2026-08-08-15:33:32+0900 TRACE nb::import() /home/user/neobash/lib/neobash.sh:51
-2026-08-08-15:33:32+0900 TRACE   __nb::init__() /home/user/neobash/lib/neobash.sh:232
-2026-08-08-15:33:32+0900 TRACE     source() /home/user/neobash/lib/neobash.sh:247
-2026-08-08-15:33:32+0900 TRACE       main() ./sample.sh:5
-2026-08-08-15:33:32+0900 DEBUG checking bash minimum version ( 4.2.0 <= 5.1.8 )   [nb::check_bash_min_version() /home/user/neobash/lib/neobash.sh:176]
-2026-08-08-15:33:32+0900 DEBUG parsing args '-a avalue' at main() ./sample.sh:36   [core::arg::parse() /home/user/neobash/lib/core/arg.sh:368]
-2026-08-08-15:33:32+0900 DEBUG ${ARGS[ARG_A]}="avalue"   [core::arg::parse() /home/user/neobash/lib/core/arg.sh:446]
-2026-08-08-15:33:32+0900 DEBUG ${ARGS[ARG_B]}="0" (default)   [core::arg::parse() /home/user/neobash/lib/core/arg.sh:476]
-2026-08-08-15:33:32+0900 DEBUG ${ARGS[ARG_C]}="false" (default)   [core::arg::parse() /home/user/neobash/lib/core/arg.sh:476]
-2026-08-08-15:33:32+0900 DEBUG ${ARGS[ARG_D]}="false" (default)   [core::arg::parse() /home/user/neobash/lib/core/arg.sh:476]
-#### Demo for arguments parser ####
-##### Show all options and flags for main()
-label  short option  long option  type    required  store  default  help message
-ARG_A  -a            --aoption    string  true      none   ""       "This is -a string option.\nYou can inseart line break."
-ARG_B  -b                         int     false     none   "0"      "This is -b int option with default."
-
-(snip)
-```
-
-* Run with debug log for sample.sh only.
+### Run with debug log for `sample.sh` only
 
 ```bash
 LOG_DEBUG_FILE="sample.sh" ./sample.sh -a avalue
 ```
 
+## Library Documentation
+
+Full documentation is available in multiple languages:
+
+- [English](doc/en/README.md)
+- [日本語](doc/ja/README.md)
+
+## Directory Structure
+
+```
+neobash/
+├── lib/                  # Core and extended libraries
+│   ├── neobash.sh        # Bootstrap & library manager
+│   ├── core/             # Core libraries (log, arg)
+│   ├── (other categorizd libraries)
+├── doc/                  # Documentation (EN / JA)
+├── test/                 # Test suite
+├── bin/                  # Helper tools for development
+├── sample.sh             # Fully working demo script
+├── sample_color_term.png # Terminal screenshot
+└── LICENSE               # MIT License
+```
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Author
+
+MATSUO Takatoshi — [matsuo.tak@gmail.com](mailto:matsuo.tak@gmail.com)
