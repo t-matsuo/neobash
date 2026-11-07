@@ -15,14 +15,14 @@ main() {
     # init core/arg.sh lib
     core::arg::init_local
     # define required options "-a" and "--aoption" as string
-    core::arg::add_option       -l "ARG_A" -o "-a" -t "string" -r "true"          -h "This is -a string option.\nYou can inseart line break."
+    core::arg::add_option       -l "ARG_A" -o "-a" -t "string" -r "true"          -h "This is -a string option.\nYou can insert line break."
     core::arg::add_option_alias -l "ARG_A" -o "--a-option"
     # define optional option "-b" as int as default=0
     core::arg::add_option       -l "ARG_B" -o "-b" -t "int"    -r "false" -d "0"  -h "This is -b int option with default."
     # define optional option "-c" as bool
     core::arg::add_option       -l "ARG_C" -o "-c" -t "bool"   -r "false"         -h "This is -c bool option with no default."
     # define flag "-d"
-    core::arg::add_option       -l "ARG_D" -o "-d" -s "true"                      -h "Thin is -d flag. ARG_D will be true if it's set."
+    core::arg::add_option       -l "ARG_D" -o "-d" -s "true"                      -h "This is -d flag. ARG_D will be true if it's set."
     # define flag "-e"
     core::arg::add_option       -l "ARG_E" -o "--e-option" -t "string" -r "false" -h "This is --e-option string option"
     core::arg::add_option_alias -l "ARG_E" -o "-e"
@@ -52,7 +52,7 @@ main() {
     core::log::error  "This is error log"
     core::log::debug  "This is debug log"
     # use alias for logging functions
-    log::info         "Thins is alias for core::log::info()"
+    log::info         "This is alias for core::log::info()"
 
     echo
     # Catch Stderr output automatically and outputs its as log
