@@ -25,13 +25,10 @@ A modular Bash scripting framework that brings structured logging, automatic CLI
 
 ## Features
 
+- **Library Manager** (`neobash.sh`) — Bootstrap. Modular `import` / `require` system for loading libraries on demand. Supports custom library paths via `nb::add_lib_path`.
 - **Argument Parser** (`core/arg.sh`) — Define options, flags, types, defaults, and required parameters with a concise API. Automatically generates `--help` and `--version` output.
 - **Structured Logging** (`core/log.sh`) — Leveled logging (DEBUG, INFO, NOTICE, WARN, ERROR, CRIT) with colorized terminal output, optional JSON format, per-function/file debug filtering, and stack traces.
-- **Library Manager** (`neobash.sh`) — Modular `import` / `require` system for loading libraries on demand. Supports custom library paths via `nb::add_lib_path`.
-- **Command Execution Wrapper** (`util/cmd.sh`) — Run sub-commands with captured stdout/stderr, timeouts, and exit-code handling.
-- **Error Handling** (`util/catch-err.sh`) — Trap `SIGERR` and unexpected return codes with automatic logging.
-- **Array Serialization** (`util/series.sh`) — Serialize and deserialize Bash arrays using base64 encoding.
-- **Built-in Integrations** — Ready-to-use helpers for Slack, Mattermost, Datadog, cURL, Markdown tables, OS detection, string utilities, and interactive Q&A.
+- **Built-in Integrations** — (Exprimental) Ready-to-use helpers for Error handling, cURL, Mattermost, Markdown tables, string utilities, and so on.
 
 ## Requirements
 
