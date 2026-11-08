@@ -94,7 +94,7 @@ slack::ping() {
 # @stderr Error and debug message.
 # @option --message / -m <vahlue> (string)(required): Message.
 # @option --url / -u <value> (string)(required): Incoming webhook URL.
-# @option --type / -t <value> (string)(option): Message type. text or mrkdwn
+# @option --type / -t <value> (string)(option): Message type. text or mrkdwn (default: text)
 # @option --insecure (optional): Ignore certificate errors.
 # @exitcode 0 If successfull.
 # @exitcode 1 If failed.
@@ -156,6 +156,84 @@ slack::webhook_post() {
         echo "$STDOUT"
     else
         core::log::info "post message skipped: msg=\"$MESSAGE\""
+    fi
+    return 0
+}
+
+# @description Post a message to slack using chat.postMessage API.
+# @stdout API response (json)
+# @stderr Error and debug message.
+# @option --message <value> (string)(required): Message.
+# @option --type / -t <value> (string)(option): Message type. text or mrkdwn or markdown (default: mrkdwn)
+# @option --token <value> (string)(required): Slack bot token.
+# @option --ch <value> (string)(required): Channel id.
+# @option --insecure (optional): Ignore certificate errors.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
+slack::post_msg() {
+    local MESSAGE=""
+    local MSG_DATA=""
+    local CURL_OPTIONS=""
+    local curl_rc=""
+    local STDOUT=""
+    local STDERR=""
+    local MSG_TYPE="mrkdwn"
+
+    core::arg::init_local
+    core::arg::add_option -l "MESSAGE" -o "--message" -r "true" -h "post message"
+    core::arg::add_option -l "TYPE" -o "--type" -r "false" -d "mrkdwn" -h "message type (text or mrkdwn or markdown) (default: mrkdwn)" 
+    core::arg::add_option_alias -l "TYPE" -a "-t"
+    core::arg::add_option -l "TOKEN" -o "--token" -r "true" -h "token"
+    core::arg::add_option -l "CH" -o "--ch" -r "true" -h "channel id"
+    core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
+    core::arg::parse "$@"
+
+    [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
+    core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
+
+    [[ "${ARGS[TYPE]}" != "text" ]] && [[ "${ARGS[TYPE]}" != "mrkdwn" ]] && [[ "${ARGS[TYPE]}" != "markdown" ]] && \
+        core::log::error "invalid type ${ARGS[TYPE]}"
+
+    MESSAGE="$( __slack::escape_message__ --message "${ARGS[MESSAGE]}" )"
+
+    [[ "${ARGS[TYPE]}" == "text" ]] && MSG_TYPE="plain_text"
+    if [[ "${ARGS[TYPE]}" == "markdown" ]]; then
+        MSG_DATA='{
+            "channel":"'"${ARGS[CH]}"'",
+            "markdown_text":"'"$MESSAGE"'"
+        }'
+    else
+        MSG_DATA='{
+            "channel":"'"${ARGS[CH]}"'",
+            "blocks":
+            [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "'"$MSG_TYPE"'",
+                        "text": "'"$MESSAGE"'"
+                    }
+                }
+            ]
+        }'
+    fi
+
+    curl::enable_fail
+    if [[ "${SLACK_POST}" == "true" ]]; then
+        util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::post_json $CURL_OPTIONS \
+            --header "Authorization: Bearer ${ARGS[TOKEN]}" \
+            -d "$MSG_DATA" \
+            "https://slack.com/api/chat.postMessage"
+        curl_rc=$?
+
+        if [[ $curl_rc -ne 0 ]]; then
+            core::log::error "post markdown message failed rc=$curl_rc ch=\"${ARGS[CH]}\" msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+            return 1
+        fi
+        core::log::debug "post markdown message successed: rc=$curl_rc ch=\"${ARGS[CH]}\" msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+        echo "$STDOUT"
+    else
+        core::log::info "post markdown message skipped: ch=\"${ARGS[CH]}\" msg=\"$MESSAGE\""
     fi
     return 0
 }

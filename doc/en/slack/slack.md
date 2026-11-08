@@ -14,6 +14,7 @@ This library can change its behavior by setting the following environment variab
 
 * [slack::ping](#slackping)
 * [slack::webhook_post](#slackwebhookpost)
+* [slack::post_msg](#slackpostmsg)
 
 ### slack::ping
 
@@ -58,7 +59,46 @@ Post a message to slack using incoming webhook.
 
 * **--type**
 
-  / -t <value> (string)(option): Message type. text or mrkdwn
+  / -t <value> (string)(option): Message type. text or mrkdwn (default: text)
+
+* **--insecure**
+
+  (optional): Ignore certificate errors.
+
+#### Exit codes
+
+* **0**: If successfull.
+* **1**: If failed.
+
+#### Output on stdout
+
+* API response (json)
+
+#### Output on stderr
+
+* Error and debug message.
+
+### slack::post_msg
+
+Post a message to slack using chat.postMessage API.
+
+#### Options
+
+* **--message \<value\>**
+
+  (string)(required): Message.
+
+* **--type**
+
+  / -t <value> (string)(option): Message type. text or mrkdwn or markdown (default: mrkdwn)
+
+* **--token \<value\>**
+
+  (string)(required): Slack bot token.
+
+* **--ch \<value\>**
+
+  (string)(required): Channel id.
 
 * **--insecure**
 
