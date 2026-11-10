@@ -4,55 +4,56 @@ Neobash core library for parsing arguments.
 
 ## Overview
 
-* Can define bash script or function options and parse them.
-* Can define required options or optional options.
-* Can define an option name alias.
-* Can define a default value.
-* Can Generate option usage.
-* Execute show_help function you define, if ``-h`` or ``--help`` option is passed.
-* Execute show_version function you define, if ``-v`` or ``--version`` option is passed.
-* Arguments type can be one of: string, int, bool, and can check value while parsing arguments.
+This library allows you to define and parse command-line options for bash scripts or functions.
+It supports required and optional options, option aliases, default values, and type checking.
+It can also generate option usage text automatically.
+
+When ``-h`` or ``--help`` is passed, the user-defined ``show_help`` function is executed
+(or ``core::arg::show_usage`` if ``show_help`` is not defined).
+When ``-v`` or ``--version`` is passed, the user-defined ``show_version`` function is executed.
+
+Supported argument types are ``string``, ``int``, and ``bool``. Values are validated during parsing.
 
 ### Initializing
 
-If you want to parse arguments in a bash script, please initialize it with the following command.
+To parse arguments in a script, initialize the library with:
 
 ```bash
 arg::init_global
 ```
 
-On the other hand, if you want to parse arguments in a function, please initialize it with the following command inside the function.
+To parse arguments inside a function, initialize the library with:
 
 ```bash
-args::init_local
+arg::init_local
 ```
 
 ## Index
 
-* [core::arg::add_option](#coreargaddoption)
-* [core::arg::add_option_alias](#coreargaddoptionalias)
+* [core::arg::add_option](#coreargadd_option)
+* [core::arg::add_option_alias](#coreargadd_option_alias)
 * [core::arg::parse](#coreargparse)
-* [core::arg::get_value](#corearggetvalue)
-* [core::arg::set_value](#coreargsetvalue)
-* [core::arg::get_all_value](#corearggetallvalue)
-* [core::arg::get_all_option](#corearggetalloption)
-* [core::arg::show_usage](#coreargshowusage)
-* [core::arg::set_help_prefix](#coreargsethelpprefix)
-* [core::arg::add_help_header](#coreargaddhelpheader)
-* [core::arg::add_version](#coreargaddversion)
+* [core::arg::get_value](#coreargget_value)
+* [core::arg::set_value](#coreargset_value)
+* [core::arg::get_all_value](#coreargget_all_value)
+* [core::arg::get_all_option](#coreargget_all_option)
+* [core::arg::show_usage](#coreargshow_usage)
+* [core::arg::set_help_prefix](#coreargset_help_prefix)
+* [core::arg::add_help_header](#coreargadd_help_header)
+* [core::arg::add_version](#coreargadd_version)
 
 ### core::arg::add_option
 
-Define an option specifications
-* Alias is defined as ``arg::add_option``
-* Need to initialize variables first with ``core::arg::init_global`` or ``core::arg::init_local``.
-* ``-h `` ``--help`` ``l-v`` ``--version`` are defined by default so you cannot use them as option name.
+Defines an option specification.
+* Alias is defined as ``arg::add_option``.
+* Variables must be initialized first with ``core::arg::init_global`` or ``core::arg::init_local``.
+* ``-h``, ``--help``, ``-v``, and ``--version`` are reserved and cannot be used as option names.
 
 #### Options
 
 * **-l \<value\>**
 
-  (string)(required): Label name to identify.
+  (string)(required): Label name used to identify the option.
 
 * **-o \<value\>**
 
@@ -60,27 +61,27 @@ Define an option specifications
 
 * **-t \<value\>**
 
-  (string)(optional): Option type. type can be one of: string, int, bool. default: ``string``
+  (string)(optional): Option type. Must be one of: ``string``, ``int``, ``bool``. default: ``string``.
 
 * **-r \<value\>**
 
-  (bool)(optional): Define if the ophtion is required. It can be one of: true, false. default: ``false``
+  (bool)(optional): Whether the option is required. Must be one of: ``true``, ``false``. default: ``false``.
 
 * **-d \<value\>**
 
-  (string)(optional): Default value if the option is not specified. default: if type is  string then ``""``, if type is int then ``0``, if type is bool then ``false``
+  (string)(optional): Default value used when the option is not specified. default: ``""`` for ``string``, ``0`` for ``int``, ``false`` for ``bool``.
 
 * **-s \<value\>**
 
-  (string)(optional): Store option value. It can be one of: none, true, false. If none, the option require value otherwise not. If true and the option is specified, the value is true, otherwise false. default: ``none``
+  (string)(optional): Storage mode. Must be one of: ``none``, ``true``, ``false``. With ``none`` the option requires a value; with ``true`` or ``false`` it acts as a flag. default: ``none``.
 
 * **-h \<value\>**
 
-  (string)(optional): Help message. default: ``no help message for this option``
+  (string)(optional): Help message for the option. default: ``no help message for this option``.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
@@ -89,33 +90,33 @@ Define an option specifications
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::add_option_alias
 
-Define an option alias name.
-* Alias is defined as ``arg::add_option_alias``
-* You need to define option first with ``core::arg::add_option``.
-* ``-h `` ``--help`` ``-v`` ``--version`` are defined by default so you cannot use them as option.
-* You can define only one alias per label.
+Defines an option alias.
+* Alias is defined as ``arg::add_option_alias``.
+* The option must be defined first with ``core::arg::add_option``.
+* ``-h``, ``--help``, ``-v``, and ``--version`` are reserved and cannot be used as aliases.
+* Only one alias can be defined per label.
 
 #### Options
 
 * **-l \<value\>**
 
-  (string)(required): Label defined by ``arg::add_option``
-
-* **-a \<value\>**
-
-  (string)(required): Option alias name such as ``--m`` for ``--myarg``. (deplcated) use -o option
+  (string)(required): Label defined by ``arg::add_option``.
 
 * **-o \<value\>**
 
-  (string)(required): Option alias name such as ``--m`` for ``--myarg``.
+  (string)(required): Option alias name such as ``-m`` for ``--myarg``.
+
+* **-a \<value\>**
+
+  (string)(deprecated): Deprecated alias for ``-o``. Use ``-o`` instead.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
@@ -124,84 +125,83 @@ Define an option alias name.
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::parse
 
-Parse arguments.
-* Alias is defined as ``arg::parse``
+Parses arguments.
+* Alias is defined as ``arg::parse``.
 #### Reserved Options
-* ``-h`` or ``--help`` : ``show_help`` function you defined is executed.
-* ``-v``" or ``--version`` : ``show_version`` function you defined is executed.
+* ``-h`` or ``--help``: Executes the user-defined ``show_help`` function (or ``core::arg::show_usage`` if ``show_help`` is not defined).
+* ``-v`` or ``--version``: Executes the user-defined ``show_version`` function.
 #### Validation
-An error occurs if a value other than an integer is passed to the int type,
-or if a value other than true or false is passed to the bool type. Additionally,
-an error will occur if an undefined option is passed.
-#### Remaining arguments
-If the argument '--' is passed, all subsequent arguments will be stored in ARG_OTHERS variable.
-##### For example
-* If you pass the arguments ``-a 1 -b 2 --c 3 ddd eee fff``, then ``ARG_OTHERS=(ddd eee fff)`` will be set.
-* If you pass the arguments ``-a 1 -- -b 2 --c 3 ddd eee fff``, then ARG_OTHERS=(-b 2 --c 3 ddd eee fff) will be set.
+Passing a non-integer value to an ``int`` option, or a value other than ``true``/``false`` to a ``bool`` option,
+will cause an error. Passing an undefined option will also cause an error.
+#### Remaining Arguments
+If the argument ``--`` is passed, all subsequent arguments are stored in the ``ARG_OTHERS`` array.
+##### Examples
+* With arguments ``-a 1 -b 2 --c 3 ddd eee fff``, ``ARG_OTHERS=(ddd eee fff)`` is set.
+* With arguments ``-a 1 -- -b 2 --c 3 ddd eee fff``, ``ARG_OTHERS=(-b 2 --c 3 ddd eee fff)`` is set.
 
 #### Arguments
 
-* **...** (string): please specify all arguments as ``"$@"``
+* **...** (string): All arguments. Pass them as ``"$@"``.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
 
-* Help text if ``-h`` or ``--help`` is specified. Version information if ``-v`` or ``--version`` is specified.
+* Help text when ``-h`` or ``--help`` is specified; version information when ``-v`` or ``--version`` is specified.
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::get_value
 
-Get a value.
-* Alias is defined as ``arg::get_value``
+Gets a value.
+* Alias is defined as ``arg::get_value``.
 
 #### Options
 
 * **-l \<value\>**
 
-  (string)(required): Label defined by ``arg::add_option``
+  (string)(required): Label defined by ``arg::add_option``.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
 
-* Show value.
+* The option value.
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::set_value
 
-Update a value.
-* Alias is defined as ``arg::set_value``
+Updates a value.
+* Alias is defined as ``arg::set_value``.
 
 #### Options
 
 * **-l \<value\>**
 
-  (string)(required): Label defined by ``arg::add_option``
+  (string)(required): Label defined by ``arg::add_option``.
 
 * **-v \<value\>**
 
-  (string)(optional): New value.
+  (string)(required): New value.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
@@ -210,16 +210,16 @@ Update a value.
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::get_all_value
 
-Show all values after ``core::arg::parse`` is called.
-* Alias is defined as ``arg::get_all_value``
+Shows all values after ``core::arg::parse`` is called.
+* Alias is defined as ``arg::get_all_value``.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
@@ -228,112 +228,112 @@ Show all values after ``core::arg::parse`` is called.
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::get_all_option
 
-Show all options defined by ``arg::add_option``.
-* Alias is defined as ``arg::get_all_option``
+Shows all options defined by ``arg::add_option``.
+* Alias is defined as ``arg::get_all_option``.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
 
-* All options. Format is csv.
+* All options in CSV format.
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::show_usage
 
-Show option usages for your script help text.
-* Alias is defined as ``arg::show_usage``
+Shows option usage for the script help text.
+* Alias is defined as ``arg::show_usage``.
 * This function is designed to embed the usage of options in the script's help message.
 
 #### Arguments
 
-* **$1** ((string)): (optional): Line prefix. This prefix is intended to be used when you want to decrease the indentation at the beginning of the usage of options. You can also specify core::arg::set_help_prefix(). default: ``""``
+* **$1** ((string)(optional):): Line prefix used to indent the usage output. You can also set it with ``core::arg::set_help_prefix()``. default: ``""``.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
 
-* Show usage message for option.
+* The usage message for options.
 
 #### Output on stderr
 
-* Error and debug message.
+* Error and debug messages.
 
 ### core::arg::set_help_prefix
 
-Set option help text prefix.
-* Alias is defined as ``arg::set_help_prefix``
+Sets the option help text prefix.
+* Alias is defined as ``arg::set_help_prefix``.
 
 #### Arguments
 
-* **$1** ((string):): prefix string
+* **$1** ((string):): Prefix string.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
 
-* None
+* None.
 
 #### Output on stderr
 
-* None
+* None.
 
 ### core::arg::add_help_header
 
-Add help header
-* Alias is defined as ``arg::add_help_prefix``
+Adds a help header.
+* Alias is defined as ``arg::add_help_header``.
 
 #### Arguments
 
-* **$1** ((string):): header string
+* **$1** ((string):): Header string.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
 
-* None
+* None.
 
 #### Output on stderr
 
-* None
+* None.
 
 ### core::arg::add_version
 
-Add version
-* Alias is defined as ``arg::add_version``
+Adds a version string.
+* Alias is defined as ``arg::add_version``.
 
 #### Arguments
 
-* **$1** ((string):): version string
+* **$1** ((string):): Version string.
 
 #### Exit codes
 
-* **0**: If successfull.
+* **0**: If successful.
 * **1**: If failed.
 
 #### Output on stdout
 
-* None
+* None.
 
 #### Output on stderr
 
-* None
+* None.
 
