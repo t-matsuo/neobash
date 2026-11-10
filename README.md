@@ -1,5 +1,7 @@
 # Neobash
 
+[🇯 🇵  日本語版はこちら](README-ja.md)
+
 <div align="center">
 
 ![Colorized terminal output sample](sample_color_term.png)
