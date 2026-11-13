@@ -1,11 +1,3 @@
-# markdown/table.sh
-
-csv から markdown テーブルへの変換
-
-## 概要
-
-csv を markdown テーブルに変換します
-
 ## 目次
 
 * [markdown::csv2table](#markdowncsv2table)
@@ -36,13 +28,21 @@ csv を markdown テーブルに変換します
 
   テーブル出力あたりの最大バイト数。0 は無制限を意味します（デフォルト: 0）
 
-* **--table-max-line \<int\>**
+* **--table-max-lines \<int\>**
 
-  テーブル出力あたりの最大データ行数。0 は無制限を意味します（デフォルト: 0）
+  テーブル1ページあたりの最大行数。ヘッダー行と区切り線も含みます。0 は無制限を意味します（デフォルト: 0）
 
 * **--page-break \<string\>**
 
-  ページ区切りの置換文字列（デフォルト: <!-- page %page/%total -->）
+  ページ区切りの置換文字列。%page はページ数、%total は総ページ数に置換されます（デフォルト: <!-- page %page/%total -->）
+
+* **--align \<bool\>**
+
+  true の場合、セルをスペースでパディングして列を揃えます（デフォルト: false）
+
+* **--no-line-break \<bool\>**
+
+  true の場合、クォートされた csv フィールド内の改行を置換せず、物理的な次の行に展開します（デフォルト: false）
 
 #### 終了コード
 
