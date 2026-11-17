@@ -15,6 +15,7 @@ Slack を利用するための便利な関数です。
 * [slack::ping](#slackping)
 * [slack::webhook_post](#slackwebhookpost)
 * [slack::post_msg](#slackpostmsg)
+* [slack::upload_file](#slackuploadfile)
 
 ### slack::ping
 
@@ -116,3 +117,51 @@ chat.postMessage API を使用して Slack にメッセージを投稿します�
 #### 標準エラー出力
 
 * エラーおよびデバッグメッセージ
+
+### slack::upload_file
+
+`files.getUploadURLExternal` と `files.completeUploadExternal` を使用して、Slack にファイルをアップロードします。
+
+#### オプション
+
+* **--file \<value\>**
+
+  (string)(必須): アップロードするファイルのパス
+
+* **--token \<value\>**
+
+  (string)(必須): Slack ボットトークン
+
+* **--ch \<value\>**
+
+  (string)(必須): ファイルをアップロードするチャンネルの ID
+
+* **--title \<value\>**
+
+  (string)(任意): ファイルのタイトル（デフォルト: ファイル名）
+
+* **--message \<value\>**
+
+  (string)(任意): ファイルを紹介するメッセージ本文。Slack の mrkdwn が使用可能です。
+
+* **--thread-ts \<value\>**
+
+  (string)(任意): 返信先の親メッセージの ts
+
+* **--insecure**
+
+  (任意): 証明書エラーを無視します。
+
+#### 終了コード
+
+* **0**: 成功時
+* **1**: 失敗時
+
+#### 標準出力
+
+* `files.completeUploadExternal` からの API レスポンス (json)
+
+#### 標準エラー出力
+
+* エラーおよびデバッグメッセージ
+

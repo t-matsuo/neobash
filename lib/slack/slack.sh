@@ -14,7 +14,7 @@
 nb::require "core/log.sh core/arg.sh"
 nb::import "curl/curl.sh"
 nb::import "util/cmd.sh"
-nb::command_check "curl"
+nb::command_check "curl jq"
 
 SLACK_POST="true"
 
@@ -229,6 +229,112 @@ slack::post_msg() {
         echo "$STDOUT"
     else
         core::log::info "post markdown message skipped: ch=\"${ARGS[CH]}\" msg=\"$MESSAGE\""
+    fi
+    return 0
+}
+
+# @description Upload a file to slack using files.getUploadURLExternal and files.completeUploadExternal.
+# @stdout API response (json) from files.completeUploadExternal
+# @stderr Error and debug message.
+# @option --file <value> (string)(required): File path to upload.
+# @option --token <value> (string)(required): Slack bot token.
+# @option --ch <value> (string)(required): The ID of the channel that this file will be uploaded to.
+# @option --title <value> (string)(optional): Title of file (default: basename of file).
+# @option --message <value> (string)(optional): Message text introducing the file. Slack mrkdwn is available.
+# @option --thread-ts <value> (string)(optional): Parent message ts to upload as reply.
+# @option --insecure (optional): Ignore certificate errors.
+# @exitcode 0 If successfull.
+# @exitcode 1 If failed.
+slack::upload_file() {
+    local CURL_OPTIONS=""
+    local curl_rc=""
+    local STDOUT=""
+    local STDERR=""
+    local GET_URL_RES=""
+    local UPLOAD_URL=""
+    local FILE_ID=""
+    local FILENAME=""
+    local FILE_LENGTH=""
+    local TITLE=""
+    local MESSAGE=""
+    local PAYLOAD=""
+
+    core::arg::init_local
+    core::arg::add_option -l "FILE" -o "--file" -r "true" -h "file path to upload"
+    core::arg::add_option -l "TOKEN" -o "--token" -r "true" -h "token"
+    core::arg::add_option -l "CH" -o "--ch" -r "true" -h "The ID of the channel that this file will be uploaded to"
+    core::arg::add_option -l "TITLE" -o "--title" -r "false" -h "title of file (default: basename of file)"
+    core::arg::add_option -l "MESSAGE" -o "--message" -r "false" -h "message text introducing the file"
+    core::arg::add_option -l "THREAD_TS" -o "--thread-ts" -r "false" -h "parent message ts to upload as reply"
+    core::arg::add_option -l "INSECURE" -o "--insecure" -r "false" -t "bool" -s "true" -h "ignore certificate errors"
+    core::arg::parse "$@"
+
+    [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
+    core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
+
+    [[ ! -f "${ARGS[FILE]}" ]] && core::log::error_exit "${ARGS[FILE]} file not found"
+
+    FILENAME="$(basename "${ARGS[FILE]}")"
+    FILE_LENGTH="$(stat -c %s "${ARGS[FILE]}")"
+    TITLE="${ARGS[TITLE]}"
+    [[ -z "$TITLE" ]] && TITLE="$FILENAME"
+    TITLE="$( __slack::escape_message__ --message "$TITLE" )"
+
+    curl::enable_fail
+    if [[ "${SLACK_POST}" == "true" ]]; then
+        util::cmd::exec --stdout GET_URL_RES --stderr STDERR --catch-sigerr "false" -- curl::post $CURL_OPTIONS \
+            --header "Authorization: Bearer ${ARGS[TOKEN]}" \
+            --data-urlencode "filename=${FILENAME}" \
+            --data-urlencode "length=${FILE_LENGTH}" \
+            "https://slack.com/api/files.getUploadURLExternal"
+        curl_rc=$?
+        if [[ $curl_rc -ne 0 ]]; then
+            core::log::error_exit "get upload url failed rc=$curl_rc file=${ARGS[FILE]} RESPONSE=\"$GET_URL_RES\" CURL_ERROR_LOG=\"$STDERR\""
+        fi
+        core::log::debug "get upload url succeeded: rc=$curl_rc file=${ARGS[FILE]} RESPONSE=\"$GET_URL_RES\" CURL_ERROR_LOG=\"$STDERR\""
+
+        if [[ "$( echo "$GET_URL_RES" | jq -r '.ok' )" != "true" ]]; then
+            core::log::error_exit "get upload url failed: $GET_URL_RES"
+        fi
+        UPLOAD_URL="$( echo "$GET_URL_RES" | jq -r '.upload_url' )"
+        FILE_ID="$( echo "$GET_URL_RES" | jq -r '.file_id' )"
+
+        util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::post $CURL_OPTIONS \
+            --header "Authorization: Bearer ${ARGS[TOKEN]}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary "@${ARGS[FILE]}" \
+            "$UPLOAD_URL"
+        curl_rc=$?
+        if [[ $curl_rc -ne 0 ]]; then
+            core::log::error_exit "file uploading failed rc=$curl_rc file=${ARGS[FILE]} UPLOAD_URL=\"$UPLOAD_URL\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+        fi
+        core::log::debug "file upload succeeded: rc=$curl_rc file=${ARGS[FILE]} UPLOAD_URL=\"$UPLOAD_URL\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+
+        MESSAGE="$( __slack::escape_message__ --message "${ARGS[MESSAGE]}" )"
+        PAYLOAD=$(jq -n \
+            --arg id "$FILE_ID" \
+            --arg title "$TITLE" \
+            --arg channel_id "${ARGS[CH]}" \
+            --arg message "$MESSAGE" \
+            --arg thread_ts "${ARGS[THREAD_TS]}" \
+            '{files:[{id:$id,title:$title}],channel_id:$channel_id,initial_comment:(if $message=="" then null else $message end),thread_ts:(if $thread_ts=="" then null else $thread_ts end)} | with_entries(select(.value != null))')
+
+        util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::post_json $CURL_OPTIONS \
+            --header "Authorization: Bearer ${ARGS[TOKEN]}" \
+            -d "$PAYLOAD" \
+            "https://slack.com/api/files.completeUploadExternal"
+        curl_rc=$?
+        if [[ $curl_rc -ne 0 ]]; then
+            core::log::error_exit "complete upload failed rc=$curl_rc file=${ARGS[FILE]} RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+        fi
+
+        if [[ "$( echo "$STDOUT" | jq -r '.ok' )" != "true" ]]; then
+            core::log::error_exit "complete upload failed: $STDOUT"
+        fi
+        core::log::debug "complete upload succeeded: rc=$curl_rc file=${ARGS[FILE]} RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
+        echo "$STDOUT"
+    else
+        core::log::info "uploading is skipped: file=${ARGS[FILE]} channel_id=${ARGS[CH]}"
     fi
     return 0
 }
