@@ -296,3 +296,30 @@ Line2",200
 |    |             | Line2         |       |
 | 3  | Orange      | Simple field  | 150   |' "$OUTPUT"
 }
+
+test_csv2table::test_24_header_inferred_from_data() {
+    local OUTPUT
+
+    OUTPUT=$(markdown::csv2table --data $'a,b,c\n1,2,3\n4,5,6')
+    assert_exit_code "0"
+    assert_equals '| a | b | c |
+| -- | -- | -- |
+| 1 | 2 | 3 |
+| 4 | 5 | 6 |' "$OUTPUT"
+}
+
+test_csv2table::test_25_header_only_data() {
+    local OUTPUT
+
+    OUTPUT=$(markdown::csv2table --data 'a,b,c')
+    assert_exit_code "0"
+    assert_equals '| a | b | c |
+| -- | -- | -- |' "$OUTPUT"
+}
+
+test_csv2table::test_26_empty_data_without_header() {
+    local OUTPUT
+
+    OUTPUT=$(markdown::csv2table --data '' 2>/dev/null)
+    assert_exit_code "1"
+}

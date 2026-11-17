@@ -10,7 +10,7 @@ Convert csv to markdown table
 
 * **--header \<string\>**
 
-  table header csv (required)
+  table header csv. If empty, the first line of --data is used as the header. (default: empty)
 
 * **--data \<string\>**
 

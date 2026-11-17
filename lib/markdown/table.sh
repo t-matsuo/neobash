@@ -278,7 +278,7 @@ __markdown::field_count() {
 
 # @description Convert csv to markdown table
 #
-# @option --header <string> table header csv (required)
+# @option --header <string> table header csv (optional, default: empty). If empty, the first line of --data is used as the header
 # @option --data <string> table data csv (required)
 # @option --line-break <string> replacement string for line breaks in quoted csv fields (default: <br>)
 # @option --cell-max-width <int> max cell width after conversion, 0 means unlimited, must be >=5 if >0 (default: 0)
@@ -300,7 +300,7 @@ markdown::csv2table() {
     local NO_LINE_BREAK="false"
 
     arg::init_local
-    arg::add_option -l "HEADER" -o "--header" -t "string" -r "true" -h "table header csv"
+    arg::add_option -l "HEADER" -o "--header" -t "string" -r "false" -d "" -h "table header csv"
     arg::add_option -l "DATA" -o "--data" -t "string" -r "true" -h "table data csv"
     arg::add_option -l "LINE_BREAK" -o "--line-break" -t "string" -r "false" -d "<br>" -h "replacement string for line breaks in quoted csv fields"
     arg::add_option -l "CELL_MAX_WIDTH" -o "--cell-max-width" -t "int" -r "false" -d "0" -h "max cell width after conversion, 0 means unlimited, must be >=5 if >0"
@@ -361,8 +361,18 @@ markdown::csv2table() {
         DATA_LINES+=("${current_line%$'\n'}")
     fi
 
+    # Determine header CSV: use --header if provided, otherwise use the first line of --data
+    local HEADER_CSV="${ARGS[HEADER]}"
+    if [[ -z "$HEADER_CSV" ]]; then
+        if (( ${#DATA_LINES[@]} == 0 )); then
+            log::error_exit "--header is empty and --data has no rows to infer a header"
+        fi
+        HEADER_CSV="${DATA_LINES[0]}"
+        DATA_LINES=("${DATA_LINES[@]:1}")
+    fi
+
     # Parse header cells
-    __markdown::parse_csv_to_cells "${ARGS[HEADER]}" "$LINE_BREAK" "$no_break_flag"
+    __markdown::parse_csv_to_cells "$HEADER_CSV" "$LINE_BREAK" "$no_break_flag"
     local -a HEADER_CELLS=("${__MARKDOWN_CELLS[@]}")
     local field_count=${#HEADER_CELLS[@]}
 
