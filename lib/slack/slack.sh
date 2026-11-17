@@ -28,8 +28,7 @@ __slack::check_host__() {
 
     HOST="${ARGS[HOST]}"
     if [[ ! "$HOST" =~ ^https?://[.a-zA-Z0-9:-]+/?$ ]]; then
-        core::log::error "Invalid slack hostname: $HOST"
-        return 1
+        core::log::error_exit "Invalid slack hostname: $HOST"
     fi
     HOST="${HOST%/}"
     echo "$HOST"
@@ -83,8 +82,7 @@ slack::ping() {
     util::cmd::exec --stdout STDOUT --stderr STDERR --catch-sigerr "false" -- curl::get $CURL_OPTIONS -s "${HOST}"
     curl_rc=$?
     if [[ "$curl_rc" -ne 0 ]]; then
-        core::log::error "slack ping failed rc=$curl_rc RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
-        return 1
+        core::log::error_exit "slack ping failed rc=$curl_rc RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
     fi
     return 0
 }
@@ -117,7 +115,7 @@ slack::webhook_post() {
     core::arg::parse "$@"
 
     [[ "${ARGS[INSECURE]}" == "true" ]] && CURL_OPTIONS="$CURL_OPTIONS --insecure"
-    [[ "${ARGS[API_URL]}" == "" ]] && log::error "incoming webhook URL is empty" && return 1
+    [[ "${ARGS[API_URL]}" == "" ]] && log::error_exit "incoming webhook URL is empty"
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
 
     slack::ping --host "https://hooks.slack.com" || return 1
@@ -138,8 +136,7 @@ slack::webhook_post() {
             ]
         }'
     else
-        core::log::error "invalid type ${ARGS[TYPE]}"
-        return 1
+        core::log::error_exit "invalid type ${ARGS[TYPE]}"
     fi
 
     curl::enable_fail
@@ -149,8 +146,7 @@ slack::webhook_post() {
         curl_rc=$?
 
         if [[ $curl_rc -ne 0 ]]; then
-            core::log::error "post message failed rc=$curl_rc msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
-            return 1
+            core::log::error_exit "post message failed rc=$curl_rc msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         fi
         core::log::debug "post message successed: rc=$curl_rc msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         echo "$STDOUT"
@@ -192,7 +188,7 @@ slack::post_msg() {
     core::log::debug "CURL_OPTIONS=$CURL_OPTIONS"
 
     [[ "${ARGS[TYPE]}" != "text" ]] && [[ "${ARGS[TYPE]}" != "mrkdwn" ]] && [[ "${ARGS[TYPE]}" != "markdown" ]] && \
-        core::log::error "invalid type ${ARGS[TYPE]}"
+        core::log::error_exit "invalid type ${ARGS[TYPE]}"
 
     MESSAGE="$( __slack::escape_message__ --message "${ARGS[MESSAGE]}" )"
 
@@ -227,8 +223,7 @@ slack::post_msg() {
         curl_rc=$?
 
         if [[ $curl_rc -ne 0 ]]; then
-            core::log::error "post markdown message failed rc=$curl_rc ch=\"${ARGS[CH]}\" msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
-            return 1
+            core::log::error_exit "post markdown message failed rc=$curl_rc ch=\"${ARGS[CH]}\" msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         fi
         core::log::debug "post markdown message successed: rc=$curl_rc ch=\"${ARGS[CH]}\" msg=\"$MESSAGE\" RESPONSE=\"$STDOUT\" CURL_ERROR_LOG=\"$STDERR\""
         echo "$STDOUT"
